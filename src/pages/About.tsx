@@ -131,10 +131,10 @@ export default function About() {
               {/* Name and Tagline */}
               <div className="space-y-3">
                 <h2 className="text-4xl md:text-5xl font-light tracking-wide">
-                  {photographerInfo.name}
+                  {t.about.name}
                 </h2>
                 <p className="text-xl text-muted-foreground font-light tracking-wide">
-                  {photographerInfo.tagline}
+                  {t.about.tagline}
                 </p>
               </div>
 
@@ -142,14 +142,12 @@ export default function About() {
 
               {/* Biography */}
               <div className="space-y-4">
-                {photographerInfo.biography.split('\n\n').map((paragraph, index) => (
-                  <p
-                    key={index}
-                    className="text-base md:text-lg font-light leading-relaxed text-muted-foreground"
-                  >
-                    {paragraph}
-                  </p>
-                ))}
+                <p className="text-base md:text-lg font-light leading-relaxed text-muted-foreground">
+                  {t.about.biography1}
+                </p>
+                <p className="text-base md:text-lg font-light leading-relaxed text-muted-foreground">
+                  {t.about.biography2}
+                </p>
               </div>
 
               {/* Contact Info */}
