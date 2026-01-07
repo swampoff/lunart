@@ -8,6 +8,8 @@ export const translations = {
       about: 'О художнике',
       cart: 'Корзина',
       admin: 'Админ',
+      contact: 'Контакты',
+      portfolio: 'Портфолио',
     },
     // Hero
     hero: {
@@ -122,6 +124,17 @@ export const translations = {
       adminPanel: 'Админ-панель',
       noAccount: 'Нет аккаунта? Зарегистрируйтесь',
       hasAccount: 'Уже есть аккаунт? Войдите',
+      createAccount: 'Создать аккаунт',
+      pleaseWait: 'Подождите...',
+      signInToAdmin: 'Вход в админ-панель',
+      createAdminAccount: 'Создание аккаунта',
+      validationError: 'Ошибка валидации',
+      invalidEmail: 'Введите корректный email',
+      passwordMinLength: 'Пароль должен быть минимум 6 символов',
+      invalidCredentials: 'Неверный email или пароль',
+      emailAlreadyRegistered: 'Этот email уже зарегистрирован. Войдите.',
+      accountCreated: 'Аккаунт создан',
+      accountCreatedDesc: 'Теперь вы можете войти с вашими данными.',
     },
     // Common
     common: {
@@ -145,6 +158,25 @@ export const translations = {
     artworkDetail: {
       artworkNotFound: 'Работа не найдена',
     },
+    // Contact
+    contact: {
+      title: 'Связаться',
+      subtitle: 'Обсудим ваш проект',
+      sendMessage: 'Отправить сообщение',
+      formDescription: 'Заполните форму и я отвечу в течение 24-48 часов.',
+      contactInfo: 'Контактная информация',
+      contactInfoDesc: 'Предпочитаете связаться напрямую? Вот как это сделать.',
+      email: 'Email',
+      phone: 'Телефон',
+      location: 'Местоположение',
+    },
+    // Portfolio
+    portfolio: {
+      title: 'Портфолио',
+      subtitle: 'Коллекция фотографий разных жанров и стилей',
+      camera: 'Камера',
+      client: 'Клиент',
+    },
   },
   en: {
     // Navigation
@@ -153,6 +185,8 @@ export const translations = {
       about: 'About',
       cart: 'Cart',
       admin: 'Admin',
+      contact: 'Contact',
+      portfolio: 'Portfolio',
     },
     // Hero
     hero: {
@@ -267,6 +301,17 @@ export const translations = {
       adminPanel: 'Admin Panel',
       noAccount: "Don't have an account? Sign up",
       hasAccount: 'Already have an account? Sign in',
+      createAccount: 'Create Account',
+      pleaseWait: 'Please wait...',
+      signInToAdmin: 'Sign in to Admin Panel',
+      createAdminAccount: 'Create Admin Account',
+      validationError: 'Validation Error',
+      invalidEmail: 'Please enter a valid email address',
+      passwordMinLength: 'Password must be at least 6 characters',
+      invalidCredentials: 'Invalid email or password',
+      emailAlreadyRegistered: 'This email is already registered. Please sign in.',
+      accountCreated: 'Account Created',
+      accountCreatedDesc: 'You can now sign in with your credentials.',
     },
     // Common
     common: {
@@ -289,6 +334,25 @@ export const translations = {
     // ArtworkDetail
     artworkDetail: {
       artworkNotFound: 'Artwork not found',
+    },
+    // Contact
+    contact: {
+      title: 'Contact',
+      subtitle: "Let's discuss your next project",
+      sendMessage: 'Send a Message',
+      formDescription: "Fill out the form below and I'll get back to you within 24-48 hours.",
+      contactInfo: 'Contact Information',
+      contactInfoDesc: "Prefer to reach out directly? Here's how you can contact me.",
+      email: 'Email',
+      phone: 'Phone',
+      location: 'Location',
+    },
+    // Portfolio
+    portfolio: {
+      title: 'Portfolio',
+      subtitle: 'A curated collection of photography spanning diverse subjects and styles',
+      camera: 'Camera',
+      client: 'Client',
     },
   },
 } as const;

@@ -4,16 +4,19 @@ import { photographerInfo } from '@/data/photographer';
 import { ContactForm } from '@/components/forms/ContactForm';
 import { Separator } from '@/components/ui/separator';
 import { SEOHead } from '@/components/seo/SEOHead';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 /**
  * Contact page with form and contact information
  * Features validated contact form and availability status
  */
 export default function Contact() {
+  const { t } = useLanguage();
+
   return (
     <>
       <SEOHead
-        title="Contact"
+        title={t.contact.title}
         description={`Get in touch with ${photographerInfo.name} for photography inquiries, collaborations, and project bookings. ${photographerInfo.availability}`}
       />
       
@@ -27,10 +30,10 @@ export default function Contact() {
             transition={{ duration: 0.4 }}
           >
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-light tracking-wide mb-4">
-              Get in Touch
+              {t.contact.title}
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground font-light tracking-wide">
-              Let's discuss your next project
+              {t.contact.subtitle}
             </p>
           </motion.div>
         </div>
@@ -49,10 +52,10 @@ export default function Contact() {
             >
               <div className="space-y-3">
                 <h2 className="text-3xl md:text-4xl font-light tracking-wide">
-                  Send a Message
+                  {t.contact.sendMessage}
                 </h2>
                 <p className="text-muted-foreground font-light">
-                  Fill out the form below and I'll get back to you within 24-48 hours. {photographerInfo.availability}
+                  {t.contact.formDescription}
                 </p>
               </div>
 
@@ -68,10 +71,10 @@ export default function Contact() {
             >
               <div className="space-y-3">
                 <h2 className="text-3xl md:text-4xl font-light tracking-wide">
-                  Contact Information
+                  {t.contact.contactInfo}
                 </h2>
                 <p className="text-muted-foreground font-light">
-                  Prefer to reach out directly? Here's how you can contact me.
+                  {t.contact.contactInfoDesc}
                 </p>
               </div>
 
@@ -86,7 +89,7 @@ export default function Contact() {
                   </div>
                   <div className="space-y-1">
                     <p className="text-sm font-light tracking-wide text-muted-foreground">
-                      Email
+                      {t.contact.email}
                     </p>
                     <a
                       href={`mailto:${photographerInfo.email}`}
@@ -104,7 +107,7 @@ export default function Contact() {
                   </div>
                   <div className="space-y-1">
                     <p className="text-sm font-light tracking-wide text-muted-foreground">
-                      Phone
+                      {t.contact.phone}
                     </p>
                     <a
                       href={`tel:${photographerInfo.phone}`}
@@ -122,7 +125,7 @@ export default function Contact() {
                   </div>
                   <div className="space-y-1">
                     <p className="text-sm font-light tracking-wide text-muted-foreground">
-                      Location
+                      {t.contact.location}
                     </p>
                     <p className="text-base md:text-lg font-light">
                       {photographerInfo.location}

@@ -8,6 +8,7 @@ import { ScrollReveal } from '@/components/ui/ScrollReveal';
 import { getProjectBySlug } from '@/data/projects';
 import { ImageWithLightbox } from '@/components/portfolio/ImageWithLightbox';
 import { Lightbox } from '@/components/portfolio/Lightbox';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 /**
  * Project detail page with hero image, gallery, and full-screen lightbox
@@ -16,6 +17,7 @@ import { Lightbox } from '@/components/portfolio/Lightbox';
 export default function ProjectDetail() {
   const { slug } = useParams<{ slug: string }>();
   const project = slug ? getProjectBySlug(slug) : undefined;
+  const { t } = useLanguage();
 
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -111,7 +113,7 @@ export default function ProjectDetail() {
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-sm font-light tracking-wide uppercase text-muted-foreground">
                   <Camera className="size-4" />
-                  <span>Camera</span>
+                  <span>{t.portfolio.camera}</span>
                 </div>
                 <p className="font-light text-foreground">{project.camera}</p>
               </div>
@@ -120,7 +122,7 @@ export default function ProjectDetail() {
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-sm font-light tracking-wide uppercase text-muted-foreground">
                   <User className="size-4" />
-                  <span>Client</span>
+                  <span>{t.portfolio.client}</span>
                 </div>
                 <p className="font-light text-foreground">{project.client}</p>
               </div>
