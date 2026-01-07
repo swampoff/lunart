@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -11,23 +11,29 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Upload, X, Image as ImageIcon } from 'lucide-react';
+import { Loader2, Upload, X, Image as ImageIcon, GripVertical } from 'lucide-react';
 
 const artworkSchema = z.object({
-  title: z.string().min(1, 'Title is required').max(200),
+  title: z.string().min(1, 'Название обязательно').max(200),
   title_en: z.string().min(1, 'English title is required').max(200),
   description: z.string().max(2000).optional(),
   description_en: z.string().max(2000).optional(),
-  dimensions: z.string().min(1, 'Dimensions are required').max(100),
+  dimensions: z.string().min(1, 'Размеры обязательны').max(100),
   medium: z.string().max(200).optional(),
   medium_en: z.string().max(200).optional(),
-  price: z.number().min(0, 'Price must be positive'),
+  price: z.number().min(0, 'Цена должна быть положительной'),
   price_usd: z.number().min(0, 'USD price must be positive'),
   year: z.number().min(1900).max(new Date().getFullYear()).optional(),
-  status: z.enum(['for_sale', 'sold']),
+  status: z.enum(['for_sale', 'sold', 'reserved']),
 });
 
 type ArtworkFormData = z.infer<typeof artworkSchema>;
+
+interface ArtworkImage {
+  id?: string;
+  image_url: string;
+  sort_order: number;
+}
 
 interface Artwork {
   id: string;
@@ -52,13 +58,15 @@ interface ArtworkFormProps {
   onSuccess: () => void;
 }
 
+const MAX_IMAGES = 5;
+
 export function ArtworkForm({ open, onOpenChange, artwork, onSuccess }: ArtworkFormProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { toast } = useToast();
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [imageUrl, setImageUrl] = useState(artwork?.image_url || '');
-  const [imagePreview, setImagePreview] = useState(artwork?.image_url || '');
+  const [images, setImages] = useState<ArtworkImage[]>([]);
+  const [loadingImages, setLoadingImages] = useState(false);
 
   const { register, handleSubmit, formState: { errors }, setValue, watch, reset } = useForm<ArtworkFormData>({
     resolver: zodResolver(artworkSchema),
@@ -73,59 +81,141 @@ export function ArtworkForm({ open, onOpenChange, artwork, onSuccess }: ArtworkF
       price: artwork?.price || 0,
       price_usd: artwork?.price_usd || 0,
       year: artwork?.year || undefined,
-      status: (artwork?.status as 'for_sale' | 'sold') || 'for_sale',
+      status: (artwork?.status as 'for_sale' | 'sold' | 'reserved') || 'for_sale',
     },
   });
 
   const status = watch('status');
 
+  // Load existing images when editing
+  useEffect(() => {
+    if (open && artwork) {
+      loadArtworkImages();
+    } else if (open && !artwork) {
+      setImages([]);
+    }
+  }, [open, artwork]);
+
+  const loadArtworkImages = async () => {
+    if (!artwork) return;
+    
+    setLoadingImages(true);
+    try {
+      const { data, error } = await supabase
+        .from('artwork_images')
+        .select('*')
+        .eq('artwork_id', artwork.id)
+        .order('sort_order');
+      
+      if (error) throw error;
+      
+      // Include main image_url if no additional images
+      if (!data || data.length === 0) {
+        setImages([{ image_url: artwork.image_url, sort_order: 0 }]);
+      } else {
+        setImages(data);
+      }
+    } catch (error) {
+      console.error('Error loading images:', error);
+      // Fallback to main image
+      setImages([{ image_url: artwork.image_url, sort_order: 0 }]);
+    } finally {
+      setLoadingImages(false);
+    }
+  };
+
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      toast({ title: 'Please select an image file', variant: 'destructive' });
+    const remainingSlots = MAX_IMAGES - images.length;
+    if (remainingSlots <= 0) {
+      toast({ 
+        title: language === 'ru' ? 'Максимум 5 изображений' : 'Maximum 5 images allowed', 
+        variant: 'destructive' 
+      });
       return;
     }
 
-    // Validate file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      toast({ title: 'Image must be less than 10MB', variant: 'destructive' });
-      return;
-    }
-
+    const filesToUpload = Array.from(files).slice(0, remainingSlots);
     setUploading(true);
 
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-      const filePath = fileName;
+      const uploadedImages: ArtworkImage[] = [];
 
-      const { error: uploadError } = await supabase.storage
-        .from('artworks')
-        .upload(filePath, file);
+      for (const file of filesToUpload) {
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+          toast({ 
+            title: language === 'ru' ? 'Выберите изображение' : 'Please select an image file', 
+            variant: 'destructive' 
+          });
+          continue;
+        }
 
-      if (uploadError) throw uploadError;
+        // Validate file size (max 10MB)
+        if (file.size > 10 * 1024 * 1024) {
+          toast({ 
+            title: language === 'ru' ? 'Изображение должно быть менее 10MB' : 'Image must be less than 10MB', 
+            variant: 'destructive' 
+          });
+          continue;
+        }
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('artworks')
-        .getPublicUrl(filePath);
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
 
-      setImageUrl(publicUrl);
-      setImagePreview(publicUrl);
-      toast({ title: 'Image uploaded successfully' });
+        const { error: uploadError } = await supabase.storage
+          .from('artworks')
+          .upload(fileName, file);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('artworks')
+          .getPublicUrl(fileName);
+
+        uploadedImages.push({
+          image_url: publicUrl,
+          sort_order: images.length + uploadedImages.length,
+        });
+      }
+
+      setImages([...images, ...uploadedImages]);
+      toast({ 
+        title: language === 'ru' ? 'Изображения загружены' : 'Images uploaded successfully' 
+      });
     } catch (error) {
       console.error('Upload error:', error);
-      toast({ title: 'Failed to upload image', variant: 'destructive' });
+      toast({ 
+        title: language === 'ru' ? 'Ошибка загрузки' : 'Failed to upload image', 
+        variant: 'destructive' 
+      });
     } finally {
       setUploading(false);
     }
   };
 
+  const removeImage = (index: number) => {
+    const newImages = images.filter((_, i) => i !== index);
+    // Update sort orders
+    setImages(newImages.map((img, i) => ({ ...img, sort_order: i })));
+  };
+
+  const moveImage = (fromIndex: number, toIndex: number) => {
+    if (toIndex < 0 || toIndex >= images.length) return;
+    const newImages = [...images];
+    const [moved] = newImages.splice(fromIndex, 1);
+    newImages.splice(toIndex, 0, moved);
+    setImages(newImages.map((img, i) => ({ ...img, sort_order: i })));
+  };
+
   const onSubmit = async (data: ArtworkFormData) => {
-    if (!imageUrl) {
-      toast({ title: 'Please upload an image', variant: 'destructive' });
+    if (images.length === 0) {
+      toast({ 
+        title: language === 'ru' ? 'Загрузите хотя бы одно изображение' : 'Please upload at least one image', 
+        variant: 'destructive' 
+      });
       return;
     }
 
@@ -144,8 +234,10 @@ export function ArtworkForm({ open, onOpenChange, artwork, onSuccess }: ArtworkF
         price_usd: data.price_usd,
         year: data.year || null,
         status: data.status,
-        image_url: imageUrl,
+        image_url: images[0]?.image_url || '', // Main image is first
       };
+
+      let artworkId: string;
 
       if (artwork) {
         const { error } = await supabase
@@ -154,106 +246,204 @@ export function ArtworkForm({ open, onOpenChange, artwork, onSuccess }: ArtworkF
           .eq('id', artwork.id);
 
         if (error) throw error;
-        toast({ title: 'Artwork updated successfully' });
+        artworkId = artwork.id;
+
+        // Delete old images
+        await supabase
+          .from('artwork_images')
+          .delete()
+          .eq('artwork_id', artwork.id);
       } else {
-        const { error } = await supabase
+        const { data: newArtwork, error } = await supabase
           .from('artworks')
-          .insert([artworkData]);
+          .insert([artworkData])
+          .select()
+          .single();
 
         if (error) throw error;
-        toast({ title: 'Artwork created successfully' });
+        artworkId = newArtwork.id;
       }
 
+      // Insert all images
+      if (images.length > 0) {
+        const imagesToInsert = images.map((img, index) => ({
+          artwork_id: artworkId,
+          image_url: img.image_url,
+          sort_order: index,
+        }));
+
+        const { error: imagesError } = await supabase
+          .from('artwork_images')
+          .insert(imagesToInsert);
+
+        if (imagesError) throw imagesError;
+      }
+
+      toast({ 
+        title: artwork 
+          ? (language === 'ru' ? 'Работа обновлена' : 'Artwork updated') 
+          : (language === 'ru' ? 'Работа добавлена' : 'Artwork created')
+      });
+
       reset();
-      setImageUrl('');
-      setImagePreview('');
+      setImages([]);
       onSuccess();
       onOpenChange(false);
     } catch (error) {
       console.error('Save error:', error);
-      toast({ title: 'Failed to save artwork', variant: 'destructive' });
+      toast({ 
+        title: language === 'ru' ? 'Ошибка сохранения' : 'Failed to save artwork', 
+        variant: 'destructive' 
+      });
     } finally {
       setSaving(false);
     }
   };
 
   const handleClose = () => {
-    reset();
-    setImageUrl(artwork?.image_url || '');
-    setImagePreview(artwork?.image_url || '');
+    reset({
+      title: artwork?.title || '',
+      title_en: artwork?.title_en || '',
+      description: artwork?.description || '',
+      description_en: artwork?.description_en || '',
+      dimensions: artwork?.dimensions || '',
+      medium: artwork?.medium || '',
+      medium_en: artwork?.medium_en || '',
+      price: artwork?.price || 0,
+      price_usd: artwork?.price_usd || 0,
+      year: artwork?.year || undefined,
+      status: (artwork?.status as 'for_sale' | 'sold' | 'reserved') || 'for_sale',
+    });
+    if (artwork) {
+      setImages([{ image_url: artwork.image_url, sort_order: 0 }]);
+    } else {
+      setImages([]);
+    }
     onOpenChange(false);
+  };
+
+  const getStatusLabel = (value: string) => {
+    const labels = {
+      for_sale: language === 'ru' ? 'В продаже' : 'For Sale',
+      sold: language === 'ru' ? 'Продано' : 'Sold',
+      reserved: language === 'ru' ? 'Резерв' : 'Reserved',
+    };
+    return labels[value as keyof typeof labels] || value;
   };
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-serif text-2xl">
-            {artwork ? 'Edit Artwork' : 'Add New Artwork'}
+            {artwork 
+              ? (language === 'ru' ? 'Редактировать работу' : 'Edit Artwork')
+              : (language === 'ru' ? 'Добавить работу' : 'Add New Artwork')
+            }
           </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 mt-4">
-          {/* Image Upload */}
-          <div className="space-y-2">
-            <Label>Artwork Image *</Label>
-            <div className="flex items-start gap-4">
-              <div className="w-40 h-48 border border-dashed border-border bg-muted/50 flex items-center justify-center overflow-hidden">
-                {imagePreview ? (
-                  <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
-                ) : (
-                  <ImageIcon className="w-10 h-10 text-muted-foreground" />
-                )}
-              </div>
-              <div className="flex-1 space-y-2">
+          {/* Image Upload Section */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Label>{language === 'ru' ? 'Изображения' : 'Images'} * ({images.length}/{MAX_IMAGES})</Label>
+              {images.length < MAX_IMAGES && (
                 <div className="relative">
                   <input
                     type="file"
                     accept="image/*"
+                    multiple
                     onChange={handleImageUpload}
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                     disabled={uploading}
                   />
-                  <Button type="button" variant="outline" className="gap-2" disabled={uploading}>
+                  <Button type="button" variant="outline" size="sm" className="gap-2" disabled={uploading}>
                     {uploading ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
                     ) : (
                       <Upload className="w-4 h-4" />
                     )}
-                    {uploading ? 'Uploading...' : 'Upload Image'}
+                    {uploading 
+                      ? (language === 'ru' ? 'Загрузка...' : 'Uploading...') 
+                      : (language === 'ru' ? 'Загрузить' : 'Upload')
+                    }
                   </Button>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  JPEG, PNG, or WebP. Max 10MB.
-                </p>
-                {imagePreview && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="gap-1 text-destructive hover:text-destructive"
-                    onClick={() => {
-                      setImageUrl('');
-                      setImagePreview('');
-                    }}
-                  >
-                    <X className="w-3 h-3" />
-                    Remove
-                  </Button>
-                )}
-              </div>
+              )}
             </div>
+            
+            {loadingImages ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : images.length === 0 ? (
+              <div className="border border-dashed border-border rounded-lg p-8 text-center">
+                <ImageIcon className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
+                <p className="text-sm text-muted-foreground">
+                  {language === 'ru' 
+                    ? 'Загрузите до 5 изображений. Первое будет главным.'
+                    : 'Upload up to 5 images. First one will be the main image.'
+                  }
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-5 gap-3">
+                {images.map((image, index) => (
+                  <div 
+                    key={index} 
+                    className="relative group aspect-[3/4] bg-muted rounded-lg overflow-hidden border border-border"
+                  >
+                    <img 
+                      src={image.image_url} 
+                      alt={`Image ${index + 1}`} 
+                      className="w-full h-full object-cover"
+                    />
+                    {index === 0 && (
+                      <div className="absolute top-1 left-1 bg-primary text-primary-foreground text-[10px] px-1.5 py-0.5 rounded">
+                        {language === 'ru' ? 'Главная' : 'Main'}
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
+                      {index > 0 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-white hover:bg-white/20"
+                          onClick={() => moveImage(index, index - 1)}
+                        >
+                          <GripVertical className="w-4 h-4" />
+                        </Button>
+                      )}
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-white hover:bg-white/20"
+                        onClick={() => removeImage(index)}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            <p className="text-xs text-muted-foreground">
+              JPEG, PNG, WebP. {language === 'ru' ? 'Макс. 10MB на файл.' : 'Max 10MB per file.'}
+            </p>
           </div>
 
           {/* Title fields */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="title">Title (Russian) *</Label>
+              <Label htmlFor="title">{language === 'ru' ? 'Название (RU)' : 'Title (Russian)'} *</Label>
               <Input id="title" {...register('title')} placeholder="Название работы" />
               {errors.title && <p className="text-xs text-destructive">{errors.title.message}</p>}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="title_en">Title (English) *</Label>
+              <Label htmlFor="title_en">{language === 'ru' ? 'Название (EN)' : 'Title (English)'} *</Label>
               <Input id="title_en" {...register('title_en')} placeholder="Artwork title" />
               {errors.title_en && <p className="text-xs text-destructive">{errors.title_en.message}</p>}
             </div>
@@ -262,11 +452,11 @@ export function ArtworkForm({ open, onOpenChange, artwork, onSuccess }: ArtworkF
           {/* Description fields */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="description">Description (Russian)</Label>
+              <Label htmlFor="description">{language === 'ru' ? 'Описание (RU)' : 'Description (Russian)'}</Label>
               <Textarea id="description" {...register('description')} placeholder="Описание работы" rows={3} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="description_en">Description (English)</Label>
+              <Label htmlFor="description_en">{language === 'ru' ? 'Описание (EN)' : 'Description (English)'}</Label>
               <Textarea id="description_en" {...register('description_en')} placeholder="Artwork description" rows={3} />
             </div>
           </div>
@@ -274,12 +464,12 @@ export function ArtworkForm({ open, onOpenChange, artwork, onSuccess }: ArtworkF
           {/* Details row */}
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="dimensions">Dimensions *</Label>
+              <Label htmlFor="dimensions">{language === 'ru' ? 'Размеры' : 'Dimensions'} *</Label>
               <Input id="dimensions" {...register('dimensions')} placeholder="100x80 см" />
               {errors.dimensions && <p className="text-xs text-destructive">{errors.dimensions.message}</p>}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="year">Year</Label>
+              <Label htmlFor="year">{language === 'ru' ? 'Год' : 'Year'}</Label>
               <Input
                 id="year"
                 type="number"
@@ -288,14 +478,15 @@ export function ArtworkForm({ open, onOpenChange, artwork, onSuccess }: ArtworkF
               />
             </div>
             <div className="space-y-2">
-              <Label>Status</Label>
-              <Select value={status} onValueChange={(v) => setValue('status', v as 'for_sale' | 'sold')}>
+              <Label>{language === 'ru' ? 'Статус' : 'Status'}</Label>
+              <Select value={status} onValueChange={(v) => setValue('status', v as 'for_sale' | 'sold' | 'reserved')}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="for_sale">For Sale</SelectItem>
-                  <SelectItem value="sold">Sold</SelectItem>
+                  <SelectItem value="for_sale">{getStatusLabel('for_sale')}</SelectItem>
+                  <SelectItem value="sold">{getStatusLabel('sold')}</SelectItem>
+                  <SelectItem value="reserved">{getStatusLabel('reserved')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -304,11 +495,11 @@ export function ArtworkForm({ open, onOpenChange, artwork, onSuccess }: ArtworkF
           {/* Medium fields */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="medium">Medium (Russian)</Label>
+              <Label htmlFor="medium">{language === 'ru' ? 'Техника (RU)' : 'Medium (Russian)'}</Label>
               <Input id="medium" {...register('medium')} placeholder="Холст, масло" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="medium_en">Medium (English)</Label>
+              <Label htmlFor="medium_en">{language === 'ru' ? 'Техника (EN)' : 'Medium (English)'}</Label>
               <Input id="medium_en" {...register('medium_en')} placeholder="Oil on canvas" />
             </div>
           </div>
@@ -316,7 +507,7 @@ export function ArtworkForm({ open, onOpenChange, artwork, onSuccess }: ArtworkF
           {/* Price fields */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="price">Price (RUB) *</Label>
+              <Label htmlFor="price">{language === 'ru' ? 'Цена (₽)' : 'Price (RUB)'} *</Label>
               <Input
                 id="price"
                 type="number"
@@ -326,7 +517,7 @@ export function ArtworkForm({ open, onOpenChange, artwork, onSuccess }: ArtworkF
               {errors.price && <p className="text-xs text-destructive">{errors.price.message}</p>}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="price_usd">Price (USD) *</Label>
+              <Label htmlFor="price_usd">{language === 'ru' ? 'Цена ($)' : 'Price (USD)'} *</Label>
               <Input
                 id="price_usd"
                 type="number"
