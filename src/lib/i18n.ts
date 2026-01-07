@@ -26,6 +26,7 @@ export const translations = {
       forSale: 'В продаже',
       addToCart: 'В корзину',
       viewDetails: 'Подробнее',
+      viewSlider: 'Слайдер',
     },
     // Filters
     filters: {
@@ -115,6 +116,7 @@ export const translations = {
       forSale: 'For Sale',
       addToCart: 'Add to Cart',
       viewDetails: 'View Details',
+      viewSlider: 'Slider',
     },
     // Filters
     filters: {

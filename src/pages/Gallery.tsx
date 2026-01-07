@@ -2,16 +2,21 @@ import { useState, useMemo } from 'react';
 import { Layout } from '@/components/layout/Layout';
 import { ArtworkCard } from '@/components/gallery/ArtworkCard';
 import { GalleryFilters } from '@/components/gallery/GalleryFilters';
+import { GallerySlider } from '@/components/gallery/GallerySlider';
 import { mockArtworks } from '@/data/mockArtworks';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { ArtworkStyle, ArtworkSize } from '@/types/artwork';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { LayoutGrid, Maximize2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export default function Gallery() {
   const { t } = useLanguage();
   const [selectedStyle, setSelectedStyle] = useState<ArtworkStyle | 'all'>('all');
   const [selectedSize, setSelectedSize] = useState<ArtworkSize | 'all'>('all');
   const [sortBy, setSortBy] = useState<'newest' | 'price_asc' | 'price_desc'>('newest');
+  const [sliderOpen, setSliderOpen] = useState(false);
+  const [sliderIndex, setSliderIndex] = useState(0);
 
   const filteredArtworks = useMemo(() => {
     let result = [...mockArtworks];
@@ -39,6 +44,11 @@ export default function Gallery() {
     return result;
   }, [selectedStyle, selectedSize, sortBy]);
 
+  const openSlider = (index: number) => {
+    setSliderIndex(index);
+    setSliderOpen(true);
+  };
+
   return (
     <Layout>
       <section className="py-12 md:py-20">
@@ -47,10 +57,20 @@ export default function Gallery() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
+            className="flex items-center justify-between mb-8"
           >
-            <h1 className="text-4xl md:text-5xl font-serif font-bold mb-8">
+            <h1 className="text-4xl md:text-5xl font-serif font-bold">
               {t.gallery.title}
             </h1>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => openSlider(0)}
+              className="gap-2"
+            >
+              <Maximize2 className="w-4 h-4" />
+              {t.gallery.viewSlider || 'Slider'}
+            </Button>
           </motion.div>
 
           <GalleryFilters
@@ -64,7 +84,9 @@ export default function Gallery() {
 
           <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredArtworks.map((artwork, index) => (
-              <ArtworkCard key={artwork.id} artwork={artwork} index={index} />
+              <div key={artwork.id} onClick={() => openSlider(index)} className="cursor-pointer">
+                <ArtworkCard artwork={artwork} index={index} />
+              </div>
             ))}
           </div>
 
@@ -75,6 +97,16 @@ export default function Gallery() {
           )}
         </div>
       </section>
+
+      <AnimatePresence>
+        {sliderOpen && (
+          <GallerySlider
+            artworks={filteredArtworks}
+            initialIndex={sliderIndex}
+            onClose={() => setSliderOpen(false)}
+          />
+        )}
+      </AnimatePresence>
     </Layout>
   );
 }

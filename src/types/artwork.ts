@@ -13,6 +13,7 @@ export interface Artwork {
   style: ArtworkStyle;
   size: ArtworkSize;
   dimensions: string;
+  medium: string;
   imageUrl: string;
   videoUrl?: string;
   status: ArtworkStatus;
