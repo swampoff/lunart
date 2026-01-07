@@ -1,12 +1,13 @@
 import { Instagram, Linkedin } from 'lucide-react';
 import { photographerInfo } from '@/data/photographer';
-import { Separator } from '@/components/ui/separator';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 /**
  * Minimal footer component with social links and copyright
  */
 export function Footer() {
   const currentYear = new Date().getFullYear();
+  const { t } = useLanguage();
 
   return (
     <footer className="border-t border-border">
@@ -14,7 +15,7 @@ export function Footer() {
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
           {/* Copyright */}
           <p className="text-sm text-muted-foreground font-light tracking-wide">
-            © {currentYear} {photographerInfo.name}. All rights reserved.
+            © {currentYear} {photographerInfo.name}. {t.footer.rights}.
           </p>
 
           {/* Social Links */}

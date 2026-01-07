@@ -3,16 +3,19 @@ import { Instagram, Linkedin } from 'lucide-react';
 import { photographerInfo } from '@/data/photographer';
 import { Separator } from '@/components/ui/separator';
 import { SEOHead } from '@/components/seo/SEOHead';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 /**
  * About page with photographer biography and professional information
  * Features split layout with portrait video and comprehensive biography
  */
 export default function About() {
+  const { t } = useLanguage();
+
   return (
     <>
       <SEOHead
-        title="About"
+        title={t.about.title}
         description={`Learn about ${photographerInfo.name}, ${photographerInfo.tagline}. ${photographerInfo.biography.split('\n\n')[0]}`}
         image={photographerInfo.portraitImage}
       />
@@ -27,10 +30,10 @@ export default function About() {
             transition={{ duration: 0.4 }}
           >
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-light tracking-wide mb-4">
-              About
+              {t.about.title}
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground font-light tracking-wide">
-              Photographer & Visual Storyteller
+              {t.about.subtitle}
             </p>
           </motion.div>
         </div>
@@ -63,9 +66,7 @@ export default function About() {
                   }}
                 >
                   <source src="https://videos.pexels.com/video-files/3888252/3888252-sd_426_226_25fps.mp4" type="video/mp4" />
-                  Your browser does not support the video tag.
                 </video>
-                {/* Video from Pexels */}
               </div>
               
               {/* Social Links */}
@@ -154,7 +155,7 @@ export default function About() {
               {/* Contact Info */}
               <div className="pt-4 space-y-2">
                 <div className="text-sm font-light tracking-wide">
-                  <span className="text-muted-foreground">Email: </span>
+                  <span className="text-muted-foreground">{t.about.email}: </span>
                   <a
                     href={`mailto:${photographerInfo.email}`}
                     className="text-foreground hover:text-muted-foreground transition-colors"
@@ -163,7 +164,7 @@ export default function About() {
                   </a>
                 </div>
                 <div className="text-sm font-light tracking-wide">
-                  <span className="text-muted-foreground">Location: </span>
+                  <span className="text-muted-foreground">{t.about.location}: </span>
                   <span className="text-foreground">{photographerInfo.location}</span>
                 </div>
               </div>

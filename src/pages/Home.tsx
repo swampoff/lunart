@@ -48,7 +48,7 @@ export default function Home() {
                 className="flex items-center justify-center gap-2 text-sm uppercase tracking-[0.3em] text-foreground/70"
               >
                 <Sparkles className="w-4 h-4" />
-                <span>Fine Art Collection</span>
+                <span>{t.home.featuredWorks}</span>
               </motion.div>
 
               {/* Main Title */}
@@ -106,7 +106,7 @@ export default function Home() {
             <ScrollReveal>
               <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-20">
                 <div className="space-y-4">
-                  <p className="text-sm uppercase tracking-[0.3em] text-muted-foreground">Featured Works</p>
+                  <p className="text-sm uppercase tracking-[0.3em] text-muted-foreground">{t.home.featuredWorks}</p>
                   <h2 className="text-4xl md:text-6xl font-serif font-light tracking-tight">
                     {t.gallery.title}
                   </h2>
@@ -115,7 +115,7 @@ export default function Home() {
                   to="/gallery"
                   className="group inline-flex items-center gap-2 text-sm uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  <span>View All</span>
+                  <span>{t.home.viewAll}</span>
                   <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                 </Link>
               </div>
@@ -136,20 +136,18 @@ export default function Home() {
             <ScrollReveal>
               <div className="grid md:grid-cols-2 gap-16 items-center">
                 <div className="space-y-8">
-                  <p className="text-sm uppercase tracking-[0.3em] text-muted-foreground">About the Artist</p>
+                  <p className="text-sm uppercase tracking-[0.3em] text-muted-foreground">{t.home.aboutArtist}</p>
                   <h2 className="text-4xl md:text-5xl font-serif font-light">
-                    Creating Art That Speaks
+                    {t.home.artistTitle}
                   </h2>
                   <p className="text-lg text-muted-foreground leading-relaxed">
-                    Each piece in the Luna collection is a unique expression of emotion, 
-                    color, and form. With influences from contemporary and abstract movements, 
-                    these works invite you to pause and reflect.
+                    {t.home.artistDescription}
                   </p>
                   <Link
                     to="/about"
                     className="inline-flex items-center gap-2 text-sm uppercase tracking-wider border-b border-foreground pb-1 hover:text-muted-foreground hover:border-muted-foreground transition-colors"
                   >
-                    <span>Learn More</span>
+                    <span>{t.home.learnMore}</span>
                     <ArrowRight className="w-4 h-4" />
                   </Link>
                 </div>
