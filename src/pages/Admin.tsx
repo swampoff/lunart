@@ -87,7 +87,7 @@ export default function Admin() {
 
   const handleSignOut = async () => {
     await signOut();
-    toast({ title: 'Signed out successfully' });
+    toast({ title: language === 'ru' ? 'Вы вышли из системы' : 'Signed out successfully' });
   };
 
   const stats = {
@@ -215,18 +215,18 @@ export default function Admin() {
                 </div>
               ) : artworks.length === 0 ? (
                 <div className="text-center py-20 text-muted-foreground">
-                  No artworks yet. Add your first artwork to get started.
+                  {language === 'ru' ? 'Пока нет работ. Добавьте первую работу.' : 'No artworks yet. Add your first artwork to get started.'}
                 </div>
               ) : (
                 <div className="border border-border bg-card overflow-hidden">
                   <table className="w-full">
                     <thead className="bg-secondary/50">
                       <tr>
-                        <th className="text-left p-4 text-xs font-medium uppercase tracking-wider">Image</th>
-                        <th className="text-left p-4 text-xs font-medium uppercase tracking-wider">Title</th>
-                        <th className="text-left p-4 text-xs font-medium uppercase tracking-wider">Price</th>
-                        <th className="text-left p-4 text-xs font-medium uppercase tracking-wider">Status</th>
-                        <th className="text-right p-4 text-xs font-medium uppercase tracking-wider">Actions</th>
+                        <th className="text-left p-4 text-xs font-medium uppercase tracking-wider">{language === 'ru' ? 'Фото' : 'Image'}</th>
+                        <th className="text-left p-4 text-xs font-medium uppercase tracking-wider">{language === 'ru' ? 'Название' : 'Title'}</th>
+                        <th className="text-left p-4 text-xs font-medium uppercase tracking-wider">{language === 'ru' ? 'Цена' : 'Price'}</th>
+                        <th className="text-left p-4 text-xs font-medium uppercase tracking-wider">{language === 'ru' ? 'Статус' : 'Status'}</th>
+                        <th className="text-right p-4 text-xs font-medium uppercase tracking-wider">{language === 'ru' ? 'Действия' : 'Actions'}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -253,9 +253,11 @@ export default function Admin() {
                               <span className={`text-[10px] uppercase tracking-wider px-2 py-1 ${
                                 artwork.status === 'sold' 
                                   ? 'bg-muted text-muted-foreground' 
+                                  : artwork.status === 'reserved'
+                                  ? 'bg-amber-500/20 text-amber-600'
                                   : 'bg-foreground text-background'
                               }`}>
-                                {artwork.status === 'sold' ? t.gallery.sold : t.gallery.forSale}
+                                {artwork.status === 'sold' ? t.gallery.sold : artwork.status === 'reserved' ? t.gallery.reserved : t.gallery.forSale}
                               </span>
                             </td>
                             <td className="p-4">
@@ -299,18 +301,18 @@ export default function Admin() {
                 </div>
               ) : orders.length === 0 ? (
                 <div className="text-center py-20 text-muted-foreground">
-                  No orders yet
+                  {language === 'ru' ? 'Пока нет заказов' : 'No orders yet'}
                 </div>
               ) : (
                 <div className="border border-border bg-card overflow-hidden">
                   <table className="w-full">
                     <thead className="bg-secondary/50">
                       <tr>
-                        <th className="text-left p-4 text-xs font-medium uppercase tracking-wider">Order ID</th>
-                        <th className="text-left p-4 text-xs font-medium uppercase tracking-wider">Customer</th>
-                        <th className="text-left p-4 text-xs font-medium uppercase tracking-wider">Amount</th>
-                        <th className="text-left p-4 text-xs font-medium uppercase tracking-wider">Status</th>
-                        <th className="text-left p-4 text-xs font-medium uppercase tracking-wider">Date</th>
+                        <th className="text-left p-4 text-xs font-medium uppercase tracking-wider">{language === 'ru' ? 'ID заказа' : 'Order ID'}</th>
+                        <th className="text-left p-4 text-xs font-medium uppercase tracking-wider">{language === 'ru' ? 'Клиент' : 'Customer'}</th>
+                        <th className="text-left p-4 text-xs font-medium uppercase tracking-wider">{language === 'ru' ? 'Сумма' : 'Amount'}</th>
+                        <th className="text-left p-4 text-xs font-medium uppercase tracking-wider">{language === 'ru' ? 'Статус' : 'Status'}</th>
+                        <th className="text-left p-4 text-xs font-medium uppercase tracking-wider">{language === 'ru' ? 'Дата' : 'Date'}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -353,14 +355,16 @@ export default function Admin() {
           <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Delete Artwork</AlertDialogTitle>
+                <AlertDialogTitle>{language === 'ru' ? 'Удалить работу' : 'Delete Artwork'}</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Are you sure you want to delete "{language === 'ru' ? artworkToDelete?.title : artworkToDelete?.title_en}"? 
-                  This action cannot be undone.
+                  {language === 'ru' 
+                    ? `Вы уверены, что хотите удалить "${artworkToDelete?.title}"? Это действие нельзя отменить.`
+                    : `Are you sure you want to delete "${artworkToDelete?.title_en}"? This action cannot be undone.`
+                  }
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+                <AlertDialogCancel disabled={deleting}>{language === 'ru' ? 'Отмена' : 'Cancel'}</AlertDialogCancel>
                 <AlertDialogAction
                   disabled={deleting}
                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
@@ -374,11 +378,11 @@ export default function Admin() {
                         .eq('id', artworkToDelete.id);
                       
                       if (error) throw error;
-                      toast({ title: 'Artwork deleted successfully' });
+                      toast({ title: language === 'ru' ? 'Работа удалена' : 'Artwork deleted successfully' });
                       fetchData();
                     } catch (error) {
                       console.error('Delete error:', error);
-                      toast({ title: 'Failed to delete artwork', variant: 'destructive' });
+                      toast({ title: language === 'ru' ? 'Ошибка удаления' : 'Failed to delete artwork', variant: 'destructive' });
                     } finally {
                       setDeleting(false);
                       setDeleteDialogOpen(false);
@@ -387,7 +391,7 @@ export default function Admin() {
                   }}
                 >
                   {deleting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                  Delete
+                  {language === 'ru' ? 'Удалить' : 'Delete'}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
