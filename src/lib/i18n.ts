@@ -86,6 +86,10 @@ export const translations = {
       subtitle: 'Фотограф и визуальный рассказчик',
       email: 'Email',
       location: 'Местоположение',
+      name: 'Сара Митчелл',
+      tagline: 'Редакционный и коммерческий фотограф',
+      biography1: 'Сара Митчелл — отмеченный наградами фотограф, специализирующийся на редакционной и коммерческой съёмке. Среди её достижений — награда International Photography Awards как Редакционный Фотограф Года 2023 и победа в PDN Photo Annual 2022. С более чем десятилетним опытом, её работы публиковались во многих международных изданиях и выставках, она сотрудничала с такими клиентами, как Vogue, The New York Times, National Geographic, Adobe, Apple, Nike и Architectural Digest.',
+      biography2: 'Живёт в Нью-Йорке, имеет степень магистра изящных искусств в области фотографии Школы Визуальных Искусств. Сара привносит уникальный взгляд в каждый проект, сочетая техническое мастерство с художественным видением. Её подход к фотографии глубоко укоренён в сторителлинге — она верит, что каждое изображение должно передавать эмоции и смысл, выходящие за рамки визуальной привлекательности.',
     },
     // Footer
     footer: {
@@ -227,6 +231,10 @@ export const translations = {
       subtitle: 'Photographer & Visual Storyteller',
       email: 'Email',
       location: 'Location',
+      name: 'Sarah Mitchell',
+      tagline: 'Editorial & Commercial Photographer',
+      biography1: 'Sarah Mitchell is an award-winning photographer specializing in editorial and commercial work, with recognition including the International Photography Awards Editorial Photographer of the Year 2023 and PDN Photo Annual Winner 2022. With over a decade of experience, her work has been featured in numerous international publications and exhibitions, collaborating with clients such as Vogue, The New York Times, National Geographic, Adobe, Apple, Nike, and Architectural Digest.',
+      biography2: 'Based in New York with an MFA in Photography from the School of Visual Arts, Sarah brings a unique perspective to every project, combining technical excellence with artistic vision. Her approach to photography is deeply rooted in storytelling, believing that every image should convey emotion and meaning beyond its visual appeal.',
     },
     // Footer
     footer: {
