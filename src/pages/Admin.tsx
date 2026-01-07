@@ -8,16 +8,32 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Plus, Edit2, Trash2, Package, BarChart3, Image, LogOut, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
+import { ArtworkForm } from '@/components/admin/ArtworkForm';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface Artwork {
   id: string;
   title: string;
   title_en: string;
+  description?: string | null;
+  description_en?: string | null;
   image_url: string;
   price: number;
   price_usd: number;
   status: string;
   dimensions: string;
+  medium?: string | null;
+  medium_en?: string | null;
+  year?: number | null;
 }
 
 interface Order {
@@ -37,6 +53,11 @@ export default function Admin() {
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [formOpen, setFormOpen] = useState(false);
+  const [editingArtwork, setEditingArtwork] = useState<Artwork | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [artworkToDelete, setArtworkToDelete] = useState<Artwork | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -176,7 +197,13 @@ export default function Admin() {
 
             <TabsContent value="artworks">
               <div className="flex justify-end mb-6">
-                <Button className="gap-2">
+                <Button 
+                  className="gap-2"
+                  onClick={() => {
+                    setEditingArtwork(null);
+                    setFormOpen(true);
+                  }}
+                >
                   <Plus className="w-4 h-4" />
                   <span className="uppercase tracking-wider text-xs">{t.admin.addArtwork}</span>
                 </Button>
@@ -233,10 +260,25 @@ export default function Admin() {
                             </td>
                             <td className="p-4">
                               <div className="flex justify-end gap-2">
-                                <Button variant="ghost" size="sm">
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => {
+                                    setEditingArtwork(artwork);
+                                    setFormOpen(true);
+                                  }}
+                                >
                                   <Edit2 className="w-4 h-4" />
                                 </Button>
-                                <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  className="text-destructive hover:text-destructive"
+                                  onClick={() => {
+                                    setArtworkToDelete(artwork);
+                                    setDeleteDialogOpen(true);
+                                  }}
+                                >
                                   <Trash2 className="w-4 h-4" />
                                 </Button>
                               </div>
@@ -298,6 +340,58 @@ export default function Admin() {
               )}
             </TabsContent>
           </Tabs>
+
+          {/* Artwork Form Dialog */}
+          <ArtworkForm
+            open={formOpen}
+            onOpenChange={setFormOpen}
+            artwork={editingArtwork}
+            onSuccess={fetchData}
+          />
+
+          {/* Delete Confirmation Dialog */}
+          <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Artwork</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to delete "{language === 'ru' ? artworkToDelete?.title : artworkToDelete?.title_en}"? 
+                  This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  disabled={deleting}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  onClick={async () => {
+                    if (!artworkToDelete) return;
+                    setDeleting(true);
+                    try {
+                      const { error } = await supabase
+                        .from('artworks')
+                        .delete()
+                        .eq('id', artworkToDelete.id);
+                      
+                      if (error) throw error;
+                      toast({ title: 'Artwork deleted successfully' });
+                      fetchData();
+                    } catch (error) {
+                      console.error('Delete error:', error);
+                      toast({ title: 'Failed to delete artwork', variant: 'destructive' });
+                    } finally {
+                      setDeleting(false);
+                      setDeleteDialogOpen(false);
+                      setArtworkToDelete(null);
+                    }
+                  }}
+                >
+                  {deleting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </section>
     </Layout>
