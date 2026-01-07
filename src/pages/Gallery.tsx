@@ -1,5 +1,4 @@
 import { useState, useMemo } from 'react';
-import { Layout } from '@/components/layout/Layout';
 import { ArtworkCard } from '@/components/gallery/ArtworkCard';
 import { GalleryFilters } from '@/components/gallery/GalleryFilters';
 import { GallerySlider } from '@/components/gallery/GallerySlider';
@@ -7,7 +6,7 @@ import { mockArtworks } from '@/data/mockArtworks';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { ArtworkStyle, ArtworkSize } from '@/types/artwork';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LayoutGrid, Maximize2 } from 'lucide-react';
+import { Maximize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function Gallery() {
@@ -50,7 +49,7 @@ export default function Gallery() {
   };
 
   return (
-    <Layout>
+    <>
       <section className="py-12 md:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
@@ -69,7 +68,7 @@ export default function Gallery() {
               className="gap-2"
             >
               <Maximize2 className="w-4 h-4" />
-              {t.gallery.viewSlider || 'Slider'}
+              {t.gallery.viewSlider}
             </Button>
           </motion.div>
 
@@ -92,7 +91,7 @@ export default function Gallery() {
 
           {filteredArtworks.length === 0 && (
             <div className="text-center py-20">
-              <p className="text-muted-foreground">No artworks found</p>
+              <p className="text-muted-foreground">{t.gallery.noArtworks}</p>
             </div>
           )}
         </div>
@@ -107,6 +106,6 @@ export default function Gallery() {
           />
         )}
       </AnimatePresence>
-    </Layout>
+    </>
   );
 }

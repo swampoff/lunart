@@ -27,6 +27,7 @@ export const translations = {
       addToCart: 'В корзину',
       viewDetails: 'Подробнее',
       viewSlider: 'Слайдер',
+      noArtworks: 'Работы не найдены',
     },
     // Filters
     filters: {
@@ -60,6 +61,31 @@ export const translations = {
       crypto: 'Криптовалюта',
       installment: 'Рассрочка',
       placeOrder: 'Разместить заказ',
+      name: 'Имя',
+      email: 'Email',
+      phone: 'Телефон',
+      address: 'Адрес',
+      city: 'Город',
+      postalCode: 'Индекс',
+      country: 'Страна',
+      orderSummary: 'Детали заказа',
+      orderPlaced: 'Заказ оформлен!',
+    },
+    // Home
+    home: {
+      featuredWorks: 'Избранные работы',
+      viewAll: 'Смотреть все',
+      aboutArtist: 'О художнике',
+      artistTitle: 'Искусство, которое говорит',
+      artistDescription: 'Каждая работа в коллекции Luna — уникальное выражение эмоций, цвета и формы. С влияниями современного и абстрактного искусства, эти работы приглашают вас остановиться и поразмышлять.',
+      learnMore: 'Узнать больше',
+    },
+    // About
+    about: {
+      title: 'О художнике',
+      subtitle: 'Фотограф и визуальный рассказчик',
+      email: 'Email',
+      location: 'Местоположение',
     },
     // Footer
     footer: {
@@ -101,6 +127,19 @@ export const translations = {
       cancel: 'Отмена',
       save: 'Сохранить',
       currency: '₽',
+      year: 'Год',
+      notFound: 'Не найдено',
+      addedToCart: 'Добавлено в корзину',
+    },
+    // NotFound
+    notFound: {
+      title: 'Страница не найдена',
+      description: 'Страница, которую вы ищете, не существует или была перемещена.',
+      returnHome: 'Вернуться на главную',
+    },
+    // ArtworkDetail
+    artworkDetail: {
+      artworkNotFound: 'Работа не найдена',
     },
   },
   en: {
@@ -129,6 +168,7 @@ export const translations = {
       addToCart: 'Add to Cart',
       viewDetails: 'View Details',
       viewSlider: 'Slider',
+      noArtworks: 'No artworks found',
     },
     // Filters
     filters: {
@@ -162,6 +202,31 @@ export const translations = {
       crypto: 'Cryptocurrency',
       installment: 'Installment',
       placeOrder: 'Place Order',
+      name: 'Name',
+      email: 'Email',
+      phone: 'Phone',
+      address: 'Address',
+      city: 'City',
+      postalCode: 'Postal Code',
+      country: 'Country',
+      orderSummary: 'Order Summary',
+      orderPlaced: 'Order placed!',
+    },
+    // Home
+    home: {
+      featuredWorks: 'Featured Works',
+      viewAll: 'View All',
+      aboutArtist: 'About the Artist',
+      artistTitle: 'Creating Art That Speaks',
+      artistDescription: 'Each piece in the Luna collection is a unique expression of emotion, color, and form. With influences from contemporary and abstract movements, these works invite you to pause and reflect.',
+      learnMore: 'Learn More',
+    },
+    // About
+    about: {
+      title: 'About',
+      subtitle: 'Photographer & Visual Storyteller',
+      email: 'Email',
+      location: 'Location',
     },
     // Footer
     footer: {
@@ -203,6 +268,19 @@ export const translations = {
       cancel: 'Cancel',
       save: 'Save',
       currency: '$',
+      year: 'Year',
+      notFound: 'Not Found',
+      addedToCart: 'Added to cart',
+    },
+    // NotFound
+    notFound: {
+      title: 'Page Not Found',
+      description: "The page you're looking for doesn't exist or has been moved.",
+      returnHome: 'Return to Home',
+    },
+    // ArtworkDetail
+    artworkDetail: {
+      artworkNotFound: 'Artwork not found',
     },
   },
 } as const;
