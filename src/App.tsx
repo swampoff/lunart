@@ -9,15 +9,19 @@ import { SkipToContent } from "@/components/ui/SkipToContent";
 import { LoadingFallback } from "@/components/ui/LoadingFallback";
 import { PageTransition } from "@/components/ui/PageTransition";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { LanguageProvider } from "@/contexts/LanguageContext";
+import { CartProvider } from "@/contexts/CartContext";
 import { AnimatePresence } from "framer-motion";
 import { lazy, Suspense } from "react";
 
 // Code-split route components for better performance
-const Index = lazy(() => import("./pages/Index"));
-const Portfolio = lazy(() => import("./pages/Portfolio"));
-const ProjectDetail = lazy(() => import("./pages/ProjectDetail"));
+const Home = lazy(() => import("./pages/Home"));
+const Gallery = lazy(() => import("./pages/Gallery"));
+const ArtworkDetail = lazy(() => import("./pages/ArtworkDetail"));
+const Cart = lazy(() => import("./pages/Cart"));
+const Checkout = lazy(() => import("./pages/Checkout"));
 const About = lazy(() => import("./pages/About"));
-const Contact = lazy(() => import("./pages/Contact"));
+const Admin = lazy(() => import("./pages/Admin"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -32,23 +36,39 @@ function AnimatedRoutes() {
           path="/"
           element={
             <PageTransition>
-              <Index />
+              <Home />
             </PageTransition>
           }
         />
         <Route
-          path="/portfolio"
+          path="/gallery"
           element={
             <PageTransition>
-              <Portfolio />
+              <Gallery />
             </PageTransition>
           }
         />
         <Route
-          path="/project/:slug"
+          path="/artwork/:id"
           element={
             <PageTransition>
-              <ProjectDetail />
+              <ArtworkDetail />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/cart"
+          element={
+            <PageTransition>
+              <Cart />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/checkout"
+          element={
+            <PageTransition>
+              <Checkout />
             </PageTransition>
           }
         />
@@ -61,10 +81,10 @@ function AnimatedRoutes() {
           }
         />
         <Route
-          path="/contact"
+          path="/admin"
           element={
             <PageTransition>
-              <Contact />
+              <Admin />
             </PageTransition>
           }
         />
@@ -85,18 +105,22 @@ const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <SkipToContent />
-            <Layout>
-              <Suspense fallback={<LoadingFallback />}>
-                <AnimatedRoutes />
-              </Suspense>
-            </Layout>
-          </BrowserRouter>
-        </TooltipProvider>
+        <LanguageProvider>
+          <CartProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <SkipToContent />
+                <Layout>
+                  <Suspense fallback={<LoadingFallback />}>
+                    <AnimatedRoutes />
+                  </Suspense>
+                </Layout>
+              </BrowserRouter>
+            </TooltipProvider>
+          </CartProvider>
+        </LanguageProvider>
       </ThemeProvider>
     </QueryClientProvider>
   </ErrorBoundary>
