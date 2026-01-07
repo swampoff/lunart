@@ -80,6 +80,18 @@ export const translations = {
       totalSales: 'Продажи',
       totalOrders: 'Заказы',
       pendingOrders: 'Ожидают',
+      signOut: 'Выйти',
+    },
+    // Auth
+    auth: {
+      signIn: 'Войти',
+      signUp: 'Регистрация',
+      email: 'Email',
+      password: 'Пароль',
+      backToGallery: 'Назад в галерею',
+      adminPanel: 'Админ-панель',
+      noAccount: 'Нет аккаунта? Зарегистрируйтесь',
+      hasAccount: 'Уже есть аккаунт? Войдите',
     },
     // Common
     common: {
@@ -170,6 +182,18 @@ export const translations = {
       totalSales: 'Sales',
       totalOrders: 'Orders',
       pendingOrders: 'Pending',
+      signOut: 'Sign Out',
+    },
+    // Auth
+    auth: {
+      signIn: 'Sign In',
+      signUp: 'Sign Up',
+      email: 'Email',
+      password: 'Password',
+      backToGallery: 'Back to Gallery',
+      adminPanel: 'Admin Panel',
+      noAccount: "Don't have an account? Sign up",
+      hasAccount: 'Already have an account? Sign in',
     },
     // Common
     common: {
