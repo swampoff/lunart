@@ -2,18 +2,20 @@ import { projects } from '@/data/projects';
 import { PortfolioGrid } from '@/components/portfolio/PortfolioGrid';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { motion } from 'framer-motion';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 /**
  * Portfolio page with masonry grid
  * Features smooth animations and responsive layout
  */
 export default function Portfolio() {
+  const { t } = useLanguage();
 
   return (
     <>
       <SEOHead 
-        title="Portfolio"
-        description="Browse my complete photography portfolio featuring portraits, landscapes, editorial work, architecture, and documentary projects."
+        title={t.portfolio.title}
+        description={t.portfolio.subtitle}
       />
       
       <div className="min-h-screen">
@@ -26,10 +28,10 @@ export default function Portfolio() {
             transition={{ duration: 0.8 }}
           >
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-light tracking-wide mb-4">
-              Portfolio
+              {t.portfolio.title}
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground font-light tracking-wide max-w-2xl mx-auto">
-              A curated collection of photography spanning diverse subjects and styles
+              {t.portfolio.subtitle}
             </p>
           </motion.div>
         </div>

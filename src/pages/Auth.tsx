@@ -9,11 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Lock, Mail, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { z } from 'zod';
-
-const authSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-});
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -23,6 +19,12 @@ export default function Auth() {
   const { user, signIn, signUp } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { t } = useLanguage();
+
+  const authSchema = z.object({
+    email: z.string().email(t.auth.invalidEmail),
+    password: z.string().min(6, t.auth.passwordMinLength),
+  });
 
   // Redirect if already logged in
   if (user) {
@@ -36,7 +38,7 @@ export default function Auth() {
     const result = authSchema.safeParse({ email, password });
     if (!result.success) {
       toast({
-        title: 'Validation Error',
+        title: t.auth.validationError,
         description: result.error.errors[0].message,
         variant: 'destructive',
       });
@@ -53,21 +55,21 @@ export default function Auth() {
       if (error) {
         let message = error.message;
         if (error.message.includes('Invalid login credentials')) {
-          message = 'Invalid email or password';
+          message = t.auth.invalidCredentials;
         } else if (error.message.includes('User already registered')) {
-          message = 'This email is already registered. Please sign in.';
+          message = t.auth.emailAlreadyRegistered;
         }
         
         toast({
-          title: 'Error',
+          title: t.common.error,
           description: message,
           variant: 'destructive',
         });
       } else {
         if (!isLogin) {
           toast({
-            title: 'Account Created',
-            description: 'You can now sign in with your credentials.',
+            title: t.auth.accountCreated,
+            description: t.auth.accountCreatedDesc,
           });
           setIsLogin(true);
         } else {
@@ -92,14 +94,14 @@ export default function Auth() {
           className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-8 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to Gallery
+          {t.auth.backToGallery}
         </Link>
 
         {/* Logo */}
         <div className="text-center mb-10">
           <h1 className="text-4xl font-serif tracking-wider mb-2">Luna</h1>
           <p className="text-muted-foreground">
-            {isLogin ? 'Sign in to Admin Panel' : 'Create Admin Account'}
+            {isLogin ? t.auth.signInToAdmin : t.auth.createAdminAccount}
           </p>
         </div>
 
@@ -107,7 +109,7 @@ export default function Auth() {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="email" className="text-sm uppercase tracking-wider">
-              Email
+              {t.auth.email}
             </Label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -125,7 +127,7 @@ export default function Auth() {
 
           <div className="space-y-2">
             <Label htmlFor="password" className="text-sm uppercase tracking-wider">
-              Password
+              {t.auth.password}
             </Label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -146,7 +148,7 @@ export default function Auth() {
             className="w-full h-12 text-sm uppercase tracking-wider"
             disabled={loading}
           >
-            {loading ? 'Please wait...' : (isLogin ? 'Sign In' : 'Create Account')}
+            {loading ? t.auth.pleaseWait : (isLogin ? t.auth.signIn : t.auth.createAccount)}
           </Button>
         </form>
 
@@ -157,7 +159,7 @@ export default function Auth() {
             onClick={() => setIsLogin(!isLogin)}
             className="text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
-            {isLogin ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
+            {isLogin ? t.auth.noAccount : t.auth.hasAccount}
           </button>
         </div>
       </motion.div>
