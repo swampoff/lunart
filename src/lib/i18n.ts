@@ -85,14 +85,16 @@ export const translations = {
     },
     // About
     about: {
-      title: 'О художнике',
-      subtitle: 'Фотограф и визуальный рассказчик',
+      title: 'О художнице',
+      subtitle: 'Современная художница',
       email: 'Email',
       location: 'Местоположение',
-      name: 'Сара Митчелл',
-      tagline: 'Редакционный и коммерческий фотограф',
-      biography1: 'Сара Митчелл — отмеченный наградами фотограф, специализирующийся на редакционной и коммерческой съёмке. Среди её достижений — награда International Photography Awards как Редакционный Фотограф Года 2023 и победа в PDN Photo Annual 2022. С более чем десятилетним опытом, её работы публиковались во многих международных изданиях и выставках, она сотрудничала с такими клиентами, как Vogue, The New York Times, National Geographic, Adobe, Apple, Nike и Architectural Digest.',
-      biography2: 'Живёт в Нью-Йорке, имеет степень магистра изящных искусств в области фотографии Школы Визуальных Искусств. Сара привносит уникальный взгляд в каждый проект, сочетая техническое мастерство с художественным видением. Её подход к фотографии глубоко укоренён в сторителлинге — она верит, что каждое изображение должно передавать эмоции и смысл, выходящие за рамки визуальной привлекательности.',
+      name: 'Luna',
+      tagline: 'Современная художница',
+      biography1: 'Luna — современный художник, создающий удивительные произведения искусства, которые открывают новые грани восприятия реальности. Её творческий путь начался в раннем детстве, когда в возрасте пяти лет она впервые взяла в руки кисть. Самоучка в технике масляной живописи, Luna развивала свой уникальный стиль годами, оттачивая мастерство и углубляя связь с искусством.',
+      biography2: 'Её творческий процесс — это медитативное погружение в мир образов, где вдохновение приходит как божественное озарение, а кисть словно сама ведёт по холсту. Магическое искусство Luna — это не просто картины, а настоящие порталы в иные измерения. Каждая работа становится проводником между мирами, открывая новые возможности для восприятия и взаимодействия с искусством.',
+      biography3: 'Художница стремится наделить свои полотна особой душой и силой, доступной тем, кто способен видеть глубже обычного. Главная миссия творчества Luna — раскрыть новые горизонты в живописи и поделиться магией искусства с миром. Её работы не просто украшают пространство — они преображают реальность, даря зрителям возможность увидеть красоту в новых измерениях.',
+      biography4: 'В каждой картине Luna воплощает свою идею о том, что искусство способно менять мир к лучшему, открывая новые грани восприятия и даря зрителям незабываемые впечатления.',
     },
     // Footer
     footer: {
@@ -263,14 +265,16 @@ export const translations = {
     },
     // About
     about: {
-      title: 'About',
-      subtitle: 'Photographer & Visual Storyteller',
+      title: 'About the Artist',
+      subtitle: 'Contemporary Artist',
       email: 'Email',
       location: 'Location',
-      name: 'Sarah Mitchell',
-      tagline: 'Editorial & Commercial Photographer',
-      biography1: 'Sarah Mitchell is an award-winning photographer specializing in editorial and commercial work, with recognition including the International Photography Awards Editorial Photographer of the Year 2023 and PDN Photo Annual Winner 2022. With over a decade of experience, her work has been featured in numerous international publications and exhibitions, collaborating with clients such as Vogue, The New York Times, National Geographic, Adobe, Apple, Nike, and Architectural Digest.',
-      biography2: 'Based in New York with an MFA in Photography from the School of Visual Arts, Sarah brings a unique perspective to every project, combining technical excellence with artistic vision. Her approach to photography is deeply rooted in storytelling, believing that every image should convey emotion and meaning beyond its visual appeal.',
+      name: 'Luna',
+      tagline: 'A Visionary Artist of Contemporary Art',
+      biography1: 'The creative journey of Luna started at the age of five when she first touched the world of painting. Self-taught in oil painting, she has come a long way from her first sketches to creating her own unique works. Her meditative approach to creativity has become the artist\'s trademark.',
+      biography2: 'Her work resembles a spiritual journey where inspiration descends like a divine revelation, and the brush moves as if guided by higher powers. Metaphysical approach to painting sets Luna\'s works apart from traditional art pieces. Her paintings are not just visual images but real portals to other dimensions, allowing the viewer to immerse themselves in the depths of their own perception.',
+      biography3: 'Spiritual component is a key element of every work. Luna strives to infuse her canvases with special energy accessible to those who can see beyond the material world. The main goal of Luna\'s creativity lies in expanding the boundaries of traditional perception of painting.',
+      biography4: 'Her works not only decorate spaces but also transform reality, revealing new dimensions of beauty and harmony to viewers. Each painting becomes a bridge between the ordinary and the sublime, giving viewers a unique experience of aesthetic and spiritual transformation.',
     },
     // Footer
     footer: {
