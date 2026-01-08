@@ -35,6 +35,12 @@ interface ArtworkImage {
   sort_order: number;
 }
 
+interface Collection {
+  id: string;
+  title: string;
+  title_en: string;
+}
+
 interface Artwork {
   id: string;
   title: string;
@@ -49,6 +55,8 @@ interface Artwork {
   year?: number | null;
   status: string;
   image_url: string;
+  collection_id?: string | null;
+  visibility?: string;
 }
 
 interface ArtworkFormProps {
@@ -56,11 +64,12 @@ interface ArtworkFormProps {
   onOpenChange: (open: boolean) => void;
   artwork?: Artwork | null;
   onSuccess: () => void;
+  collections?: Collection[];
 }
 
 const MAX_IMAGES = 5;
 
-export function ArtworkForm({ open, onOpenChange, artwork, onSuccess }: ArtworkFormProps) {
+export function ArtworkForm({ open, onOpenChange, artwork, onSuccess, collections = [] }: ArtworkFormProps) {
   const { t, language } = useLanguage();
   const { toast } = useToast();
   const [uploading, setUploading] = useState(false);
