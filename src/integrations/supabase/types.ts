@@ -48,6 +48,7 @@ export type Database = {
       }
       artworks: {
         Row: {
+          collection_id: string | null
           created_at: string
           description: string | null
           description_en: string | null
@@ -58,13 +59,16 @@ export type Database = {
           medium_en: string | null
           price: number
           price_usd: number
+          sort_order: number
           status: string
           title: string
           title_en: string
           updated_at: string
+          visibility: string
           year: number | null
         }
         Insert: {
+          collection_id?: string | null
           created_at?: string
           description?: string | null
           description_en?: string | null
@@ -75,13 +79,16 @@ export type Database = {
           medium_en?: string | null
           price: number
           price_usd: number
+          sort_order?: number
           status?: string
           title: string
           title_en: string
           updated_at?: string
+          visibility?: string
           year?: number | null
         }
         Update: {
+          collection_id?: string | null
           created_at?: string
           description?: string | null
           description_en?: string | null
@@ -92,11 +99,104 @@ export type Database = {
           medium_en?: string | null
           price?: number
           price_usd?: number
+          sort_order?: number
           status?: string
           title?: string
           title_en?: string
           updated_at?: string
+          visibility?: string
           year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "artworks_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      collection_videos: {
+        Row: {
+          collection_id: string
+          cover_url: string | null
+          created_at: string
+          description: string | null
+          description_en: string | null
+          id: string
+          title: string
+          title_en: string | null
+          updated_at: string
+          video_url: string
+        }
+        Insert: {
+          collection_id: string
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          description_en?: string | null
+          id?: string
+          title: string
+          title_en?: string | null
+          updated_at?: string
+          video_url: string
+        }
+        Update: {
+          collection_id?: string
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          description_en?: string | null
+          id?: string
+          title?: string
+          title_en?: string | null
+          updated_at?: string
+          video_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collection_videos_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: true
+            referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      collections: {
+        Row: {
+          created_at: string
+          description: string | null
+          description_en: string | null
+          id: string
+          sort_order: number
+          status: string
+          title: string
+          title_en: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          description_en?: string | null
+          id?: string
+          sort_order?: number
+          status?: string
+          title: string
+          title_en: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          description_en?: string | null
+          id?: string
+          sort_order?: number
+          status?: string
+          title?: string
+          title_en?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -181,6 +281,39 @@ export type Database = {
           id?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      site_settings: {
+        Row: {
+          created_at: string
+          id: string
+          meta_description: string | null
+          meta_description_en: string | null
+          meta_title: string | null
+          meta_title_en: string | null
+          og_image_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          meta_description?: string | null
+          meta_description_en?: string | null
+          meta_title?: string | null
+          meta_title_en?: string | null
+          og_image_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          meta_description?: string | null
+          meta_description_en?: string | null
+          meta_title?: string | null
+          meta_title_en?: string | null
+          og_image_url?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
