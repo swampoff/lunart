@@ -3,9 +3,24 @@ import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Edit2, Trash2, Loader2, Image as ImageIcon, Eye, EyeOff, GripVertical } from 'lucide-react';
+import { Plus, Loader2, Image as ImageIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ArtworkForm } from './ArtworkForm';
+import { SortableArtworkRow } from './SortableArtworkRow';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -60,6 +75,13 @@ export function ArtworksList({ initialFormOpen = false, onFormOpenChange }: Artw
   const [deleting, setDeleting] = useState(false);
   const [filterCollection, setFilterCollection] = useState<string>('all');
 
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -77,7 +99,6 @@ export function ArtworksList({ initialFormOpen = false, onFormOpenChange }: Artw
   const fetchData = async () => {
     setLoading(true);
     try {
-      // Fetch artworks
       const { data: artworksData, error: artworksError } = await supabase
         .from('artworks')
         .select('*')
@@ -85,7 +106,6 @@ export function ArtworksList({ initialFormOpen = false, onFormOpenChange }: Artw
 
       if (artworksError) throw artworksError;
 
-      // Fetch collections
       const { data: collectionsData, error: collectionsError } = await supabase
         .from('collections')
         .select('id, title, title_en')
@@ -106,11 +126,42 @@ export function ArtworksList({ initialFormOpen = false, onFormOpenChange }: Artw
     }
   };
 
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = artworks.findIndex(a => a.id === active.id);
+    const newIndex = artworks.findIndex(a => a.id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const newArtworks = [...artworks];
+    const [moved] = newArtworks.splice(oldIndex, 1);
+    newArtworks.splice(newIndex, 0, moved);
+
+    // Update local state immediately for smooth UX
+    const updatedArtworks = newArtworks.map((a, i) => ({ ...a, sort_order: i }));
+    setArtworks(updatedArtworks);
+
+    // Update in database
+    try {
+      const updates = updatedArtworks.map(a => ({ id: a.id, sort_order: a.sort_order }));
+      for (const update of updates) {
+        await supabase
+          .from('artworks')
+          .update({ sort_order: update.sort_order })
+          .eq('id', update.id);
+      }
+      toast({ title: language === 'ru' ? 'Порядок сохранён' : 'Order saved' });
+    } catch (error) {
+      console.error('Reorder error:', error);
+      fetchData(); // Rollback on error
+    }
+  };
+
   const handleDelete = async () => {
     if (!artworkToDelete) return;
     setDeleting(true);
     try {
-      // Delete artwork images first
       await supabase
         .from('artwork_images')
         .delete()
@@ -166,20 +217,6 @@ export function ArtworksList({ initialFormOpen = false, onFormOpenChange }: Artw
     : filterCollection === 'none'
     ? artworks.filter(a => !a.collection_id)
     : artworks.filter(a => a.collection_id === filterCollection);
-
-  const getStatusBadge = (status: string) => {
-    const badges: Record<string, { label: string; labelEn: string; class: string }> = {
-      for_sale: { label: 'В продаже', labelEn: 'For Sale', class: 'bg-green-500/10 text-green-600' },
-      sold: { label: 'Продано', labelEn: 'Sold', class: 'bg-muted text-muted-foreground' },
-      reserved: { label: 'Резерв', labelEn: 'Reserved', class: 'bg-amber-500/10 text-amber-600' },
-    };
-    const badge = badges[status] || badges.for_sale;
-    return (
-      <span className={`text-[10px] uppercase tracking-wider px-2 py-1 rounded ${badge.class}`}>
-        {language === 'ru' ? badge.label : badge.labelEn}
-      </span>
-    );
-  };
 
   const getCollectionName = (collectionId: string | null | undefined) => {
     if (!collectionId) return language === 'ru' ? 'Без коллекции' : 'No collection';
@@ -266,79 +303,28 @@ export function ArtworksList({ initialFormOpen = false, onFormOpenChange }: Artw
                 </th>
               </tr>
             </thead>
-            <tbody>
-              {filteredArtworks.map((artwork) => {
-                const title = language === 'ru' ? artwork.title : artwork.title_en;
-                const price = language === 'ru'
-                  ? `${artwork.price.toLocaleString('ru-RU')} ₽`
-                  : `$${artwork.price_usd.toLocaleString('en-US')}`;
-                const isHidden = artwork.visibility === 'hidden';
-
-                return (
-                  <tr key={artwork.id} className={`border-t border-border ${isHidden ? 'opacity-50' : ''}`}>
-                    <td className="p-4">
-                      <GripVertical className="w-4 h-4 text-muted-foreground cursor-grab" />
-                    </td>
-                    <td className="p-4">
-                      <div className="w-12 h-16 bg-muted rounded overflow-hidden">
-                        <img
-                          src={artwork.image_url}
-                          alt={title}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <p className="font-serif">{title}</p>
-                      {artwork.year && (
-                        <p className="text-xs text-muted-foreground">{artwork.year}</p>
-                      )}
-                    </td>
-                    <td className="p-4 text-sm text-muted-foreground">
-                      {getCollectionName(artwork.collection_id)}
-                    </td>
-                    <td className="p-4">{price}</td>
-                    <td className="p-4">{getStatusBadge(artwork.status)}</td>
-                    <td className="p-4">
-                      <div className="flex justify-end gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => toggleVisibility(artwork)}
-                          title={isHidden 
-                            ? (language === 'ru' ? 'Показать' : 'Show') 
-                            : (language === 'ru' ? 'Скрыть' : 'Hide')
-                          }
-                        >
-                          {isHidden ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            setEditingArtwork(artwork);
-                            setFormOpen(true);
-                          }}
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-destructive hover:text-destructive"
-                          onClick={() => {
-                            setArtworkToDelete(artwork);
-                            setDeleteDialogOpen(true);
-                          }}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+              <SortableContext items={filteredArtworks.map(a => a.id)} strategy={verticalListSortingStrategy}>
+                <tbody>
+                  {filteredArtworks.map((artwork) => (
+                    <SortableArtworkRow
+                      key={artwork.id}
+                      artwork={artwork}
+                      collectionName={getCollectionName(artwork.collection_id)}
+                      onToggleVisibility={() => toggleVisibility(artwork)}
+                      onEdit={() => {
+                        setEditingArtwork(artwork);
+                        setFormOpen(true);
+                      }}
+                      onDelete={() => {
+                        setArtworkToDelete(artwork);
+                        setDeleteDialogOpen(true);
+                      }}
+                    />
+                  ))}
+                </tbody>
+              </SortableContext>
+            </DndContext>
           </table>
         </div>
       )}
