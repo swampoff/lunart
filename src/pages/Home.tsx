@@ -29,7 +29,7 @@ export default function Home() {
               alt="Luna Gallery"
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/20 to-background" />
+            <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/50 to-background" />
           </div>
 
           {/* Hero Content */}
