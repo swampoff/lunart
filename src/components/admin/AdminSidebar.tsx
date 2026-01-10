@@ -38,8 +38,8 @@ export function AdminSidebar({ activeTab, onTabChange, onSignOut }: AdminSidebar
         </p>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-1">
+      {/* Navigation - centered vertically */}
+      <nav className="flex-1 flex flex-col justify-center p-4 space-y-1">
         {menuItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;

@@ -76,6 +76,7 @@ export function ArtworkForm({ open, onOpenChange, artwork, onSuccess, collection
   const [saving, setSaving] = useState(false);
   const [images, setImages] = useState<ArtworkImage[]>([]);
   const [loadingImages, setLoadingImages] = useState(false);
+  const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(artwork?.collection_id || null);
 
   const { register, handleSubmit, formState: { errors }, setValue, watch, reset } = useForm<ArtworkFormData>({
     resolver: zodResolver(artworkSchema),
@@ -95,6 +96,12 @@ export function ArtworkForm({ open, onOpenChange, artwork, onSuccess, collection
   });
 
   const status = watch('status');
+
+  useEffect(() => {
+    if (open) {
+      setSelectedCollectionId(artwork?.collection_id || null);
+    }
+  }, [open, artwork]);
 
   useEffect(() => {
     if (open && artwork) {
@@ -238,6 +245,7 @@ export function ArtworkForm({ open, onOpenChange, artwork, onSuccess, collection
         year: data.year || null,
         status: data.status,
         image_url: images[0]?.image_url || '',
+        collection_id: selectedCollectionId,
       };
 
       let artworkId: string;
@@ -288,6 +296,7 @@ export function ArtworkForm({ open, onOpenChange, artwork, onSuccess, collection
 
       reset();
       setImages([]);
+      setSelectedCollectionId(null);
       onSuccess();
       onOpenChange(false);
     } catch (error) {
@@ -315,6 +324,7 @@ export function ArtworkForm({ open, onOpenChange, artwork, onSuccess, collection
       year: artwork?.year || undefined,
       status: (artwork?.status as 'for_sale' | 'sold' | 'reserved') || 'for_sale',
     });
+    setSelectedCollectionId(artwork?.collection_id || null);
     if (artwork) {
       setImages([{ image_url: artwork.image_url, sort_order: 0 }]);
     } else {
@@ -504,8 +514,27 @@ export function ArtworkForm({ open, onOpenChange, artwork, onSuccess, collection
             </div>
           </div>
 
-          {/* Medium fields */}
-          <div className="grid grid-cols-2 gap-4">
+          {/* Collection & Medium fields */}
+          <div className="grid grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label>{language === 'ru' ? 'Коллекция' : 'Collection'}</Label>
+              <Select 
+                value={selectedCollectionId || 'none'} 
+                onValueChange={(v) => setSelectedCollectionId(v === 'none' ? null : v)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={language === 'ru' ? 'Выберите коллекцию' : 'Select collection'} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">{language === 'ru' ? 'Без коллекции' : 'No collection'}</SelectItem>
+                  {collections.map((col) => (
+                    <SelectItem key={col.id} value={col.id}>
+                      {language === 'ru' ? col.title : col.title_en}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="space-y-2">
               <Label htmlFor="medium">{language === 'ru' ? 'Техника (RU)' : 'Medium (Russian)'}</Label>
               <Input id="medium" {...register('medium')} placeholder="Холст, масло" />

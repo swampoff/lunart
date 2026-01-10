@@ -2,9 +2,25 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
-import { Plus, Edit2, Trash2, Loader2, FolderOpen, Image, Video, Eye, EyeOff } from 'lucide-react';
+import { Plus, Loader2, FolderOpen } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { CollectionForm } from './CollectionForm';
+import { SortableCollectionRow } from './SortableCollectionRow';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -43,6 +59,13 @@ export function CollectionsList({ onOpenArtworkForm }: CollectionsListProps) {
   const [collectionToDelete, setCollectionToDelete] = useState<Collection | null>(null);
   const [deleting, setDeleting] = useState(false);
 
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
   useEffect(() => {
     fetchCollections();
   }, []);
@@ -50,7 +73,6 @@ export function CollectionsList({ onOpenArtworkForm }: CollectionsListProps) {
   const fetchCollections = async () => {
     setLoading(true);
     try {
-      // Fetch collections
       const { data: collectionsData, error } = await supabase
         .from('collections')
         .select('*')
@@ -58,12 +80,10 @@ export function CollectionsList({ onOpenArtworkForm }: CollectionsListProps) {
 
       if (error) throw error;
 
-      // Fetch artwork counts per collection
       const { data: artworkCounts } = await supabase
         .from('artworks')
         .select('collection_id');
 
-      // Fetch videos
       const { data: videos } = await supabase
         .from('collection_videos')
         .select('collection_id');
@@ -83,6 +103,42 @@ export function CollectionsList({ onOpenArtworkForm }: CollectionsListProps) {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const oldIndex = collections.findIndex((c) => c.id === active.id);
+      const newIndex = collections.findIndex((c) => c.id === over.id);
+
+      const newCollections = arrayMove(collections, oldIndex, newIndex);
+      setCollections(newCollections);
+
+      // Update sort_order in database
+      try {
+        const updates = newCollections.map((col, index) => ({
+          id: col.id,
+          sort_order: index,
+        }));
+
+        for (const update of updates) {
+          await supabase
+            .from('collections')
+            .update({ sort_order: update.sort_order })
+            .eq('id', update.id);
+        }
+
+        toast({ title: language === 'ru' ? 'Порядок сохранён' : 'Order saved' });
+      } catch (error) {
+        console.error('Error updating order:', error);
+        toast({
+          title: language === 'ru' ? 'Ошибка сохранения порядка' : 'Failed to save order',
+          variant: 'destructive',
+        });
+        fetchCollections();
+      }
     }
   };
 
@@ -120,7 +176,7 @@ export function CollectionsList({ onOpenArtworkForm }: CollectionsListProps) {
             {language === 'ru' ? 'Коллекции' : 'Collections'}
           </h1>
           <p className="text-muted-foreground mt-1">
-            {language === 'ru' ? 'Тематические разделы сайта' : 'Thematic sections of the website'}
+            {language === 'ru' ? 'Перетаскивайте для изменения порядка' : 'Drag to reorder'}
           </p>
         </div>
         <Button onClick={() => { setEditingCollection(null); setFormOpen(true); }} className="gap-2">
@@ -142,84 +198,33 @@ export function CollectionsList({ onOpenArtworkForm }: CollectionsListProps) {
           </p>
         </div>
       ) : (
-        <div className="grid gap-4">
-          {collections.map((collection) => {
-            const title = language === 'ru' ? collection.title : collection.title_en;
-            const isPublished = collection.status === 'published';
-            const canPublish = (collection.artworkCount || 0) >= 5 && 
-                               (collection.artworkCount || 0) <= 7 && 
-                               collection.hasVideo;
-
-            return (
-              <div
-                key={collection.id}
-                className="bg-card border border-border rounded-lg p-6 flex items-center justify-between"
-              >
-                <div className="flex items-center gap-6">
-                  <div className="w-12 h-12 bg-secondary rounded-lg flex items-center justify-center">
-                    <FolderOpen className="w-6 h-6 text-muted-foreground" />
-                  </div>
-                  <div>
-                    <h3 className="font-serif text-lg">{title}</h3>
-                    <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <Image className="w-4 h-4" />
-                        {collection.artworkCount}/7 {language === 'ru' ? 'фото' : 'photos'}
-                      </span>
-                      <span className={`flex items-center gap-1 ${collection.hasVideo ? 'text-green-600' : 'text-amber-600'}`}>
-                        <Video className="w-4 h-4" />
-                        {collection.hasVideo 
-                          ? (language === 'ru' ? 'Есть видео' : 'Has video') 
-                          : (language === 'ru' ? 'Нет видео' : 'No video')
-                        }
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4">
-                  {/* Status badge */}
-                  <span className={`flex items-center gap-1.5 text-xs uppercase tracking-wider px-3 py-1.5 rounded ${
-                    isPublished 
-                      ? 'bg-green-500/10 text-green-600' 
-                      : 'bg-muted text-muted-foreground'
-                  }`}>
-                    {isPublished ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                    {isPublished 
-                      ? (language === 'ru' ? 'Опубликовано' : 'Published') 
-                      : (language === 'ru' ? 'Черновик' : 'Draft')
-                    }
-                  </span>
-
-                  {/* Actions */}
-                  <div className="flex gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setEditingCollection(collection);
-                        setFormOpen(true);
-                      }}
-                    >
-                      <Edit2 className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-destructive hover:text-destructive"
-                      onClick={() => {
-                        setCollectionToDelete(collection);
-                        setDeleteDialogOpen(true);
-                      }}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={collections.map(c => c.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <div className="grid gap-4">
+              {collections.map((collection) => (
+                <SortableCollectionRow
+                  key={collection.id}
+                  collection={collection}
+                  onEdit={(col) => {
+                    setEditingCollection(col);
+                    setFormOpen(true);
+                  }}
+                  onDelete={(col) => {
+                    setCollectionToDelete(col);
+                    setDeleteDialogOpen(true);
+                  }}
+                />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
       )}
 
       {/* Collection Form */}
