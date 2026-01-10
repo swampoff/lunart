@@ -29,7 +29,7 @@ export default function Home() {
               alt="Luna Gallery"
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/50 to-background" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-background" />
           </div>
 
           {/* Hero Content */}
@@ -45,7 +45,7 @@ export default function Home() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
-                className="flex items-center justify-center gap-2 text-sm uppercase tracking-[0.3em] text-foreground/70"
+                className="flex items-center justify-center gap-2 text-sm uppercase tracking-[0.3em] text-white/80"
               >
                 <Sparkles className="w-4 h-4" />
                 <span>{t.home.featuredWorks}</span>
@@ -53,7 +53,7 @@ export default function Home() {
 
               {/* Main Title */}
               <motion.h1
-                className="text-display text-7xl md:text-8xl lg:text-[10rem] leading-[0.85] tracking-tight"
+                className="text-display text-7xl md:text-8xl lg:text-[10rem] leading-[0.85] tracking-tight text-white"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1, delay: 0.3 }}
@@ -63,7 +63,7 @@ export default function Home() {
               
               {/* Subtitle */}
               <motion.p
-                className="text-xl md:text-2xl font-light tracking-wide text-muted-foreground max-w-xl mx-auto"
+                className="text-xl md:text-2xl font-light tracking-wide text-white/70 max-w-xl mx-auto"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1, delay: 0.5 }}
