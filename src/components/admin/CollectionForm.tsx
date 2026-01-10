@@ -154,7 +154,7 @@ export function CollectionForm({ open, onOpenChange, collection, onSuccess, artw
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl">
+      <DialogContent className="max-w-xl !bg-white dark:!bg-zinc-900 border-border shadow-2xl">
         <DialogHeader>
           <DialogTitle className="font-serif text-2xl">
             {collection
