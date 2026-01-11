@@ -344,7 +344,7 @@ export function ArtworkForm({ open, onOpenChange, artwork, onSuccess, collection
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto !bg-white dark:!bg-zinc-900 border-border shadow-2xl">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-serif text-2xl">
             {artwork 
