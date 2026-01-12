@@ -8,9 +8,10 @@ import { Dashboard } from '@/components/admin/Dashboard';
 import { CollectionsList } from '@/components/admin/CollectionsList';
 import { ArtworksList } from '@/components/admin/ArtworksList';
 import { VideosList } from '@/components/admin/VideosList';
+import { GalleriesList } from '@/components/admin/GalleriesList';
 import { SiteSettings } from '@/components/admin/SiteSettings';
 
-type AdminTab = 'dashboard' | 'collections' | 'artworks' | 'videos' | 'settings';
+type AdminTab = 'dashboard' | 'collections' | 'artworks' | 'videos' | 'galleries' | 'settings';
 
 export default function Admin() {
   const { language } = useLanguage();
@@ -81,6 +82,7 @@ export default function Admin() {
           />
         )}
         {activeTab === 'videos' && <VideosList />}
+        {activeTab === 'galleries' && <GalleriesList />}
         {activeTab === 'settings' && <SiteSettings />}
       </main>
     </div>

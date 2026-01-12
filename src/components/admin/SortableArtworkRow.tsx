@@ -12,6 +12,7 @@ interface Artwork {
   price: number;
   price_usd: number;
   status: string;
+  dimensions: string;
   year?: number | null;
   collection_id?: string | null;
   visibility: string;

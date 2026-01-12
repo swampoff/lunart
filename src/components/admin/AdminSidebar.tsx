@@ -6,10 +6,11 @@ import {
   Image, 
   Video, 
   Settings,
-  LogOut
+  LogOut,
+  Building2
 } from 'lucide-react';
 
-type AdminTab = 'dashboard' | 'collections' | 'artworks' | 'videos' | 'settings';
+type AdminTab = 'dashboard' | 'collections' | 'artworks' | 'videos' | 'galleries' | 'settings';
 
 interface AdminSidebarProps {
   activeTab: AdminTab;
@@ -25,6 +26,7 @@ export function AdminSidebar({ activeTab, onTabChange, onSignOut }: AdminSidebar
     { id: 'collections', icon: FolderOpen, label: 'Коллекции', labelEn: 'Collections' },
     { id: 'artworks', icon: Image, label: 'Картины', labelEn: 'Artworks' },
     { id: 'videos', icon: Video, label: 'Видео', labelEn: 'Videos' },
+    { id: 'galleries', icon: Building2, label: 'Галереи', labelEn: 'Galleries' },
     { id: 'settings', icon: Settings, label: 'Настройки', labelEn: 'Settings' },
   ];
 
