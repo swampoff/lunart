@@ -1,16 +1,62 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { mockArtworks } from '@/data/mockArtworks';
+import { supabase } from '@/integrations/supabase/client';
 import { ArtworkCard } from '@/components/gallery/ArtworkCard';
 import { ScrollIndicator } from '@/components/ui/ScrollIndicator';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
 import { SEOHead } from '@/components/seo/SEOHead';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight, Sparkles, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 
+interface Artwork {
+  id: string;
+  title: string;
+  title_en: string;
+  image_url: string;
+  price: number;
+  price_usd: number;
+  status: string;
+  dimensions: string;
+  year?: number | null;
+}
+
 export default function Home() {
-  const { t } = useLanguage();
-  const featuredArtworks = mockArtworks.slice(0, 3);
+  const { t, language } = useLanguage();
+  const [heroArtwork, setHeroArtwork] = useState<Artwork | null>(null);
+  const [featuredArtworks, setFeaturedArtworks] = useState<Artwork[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchArtworks();
+  }, []);
+
+  const fetchArtworks = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('artworks')
+        .select('id, title, title_en, image_url, price, price_usd, status, dimensions, year')
+        .eq('visibility', 'visible')
+        .order('sort_order')
+        .limit(4);
+
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        setHeroArtwork(data[0]);
+        setFeaturedArtworks(data.slice(1, 4));
+      }
+    } catch (error) {
+      console.error('Error fetching artworks:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const heroImage = heroArtwork?.image_url || 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=1920&q=80';
+  const heroTitle = heroArtwork 
+    ? (language === 'ru' ? heroArtwork.title : heroArtwork.title_en)
+    : 'Luna Gallery';
 
   return (
     <>
@@ -24,11 +70,17 @@ export default function Home() {
         <section className="relative h-screen w-full overflow-hidden">
           {/* Background */}
           <div className="absolute inset-0">
-            <img
-              src="https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=1920&q=80"
-              alt="Luna Gallery"
-              className="w-full h-full object-cover"
-            />
+            {loading ? (
+              <div className="w-full h-full bg-secondary flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : (
+              <img
+                src={heroImage}
+                alt={heroTitle}
+                className="w-full h-full object-cover"
+              />
+            )}
             <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-background" />
           </div>
 
@@ -58,7 +110,7 @@ export default function Home() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1, delay: 0.3 }}
               >
-                {t.hero.title}
+                {heroArtwork ? heroTitle : t.hero.title}
               </motion.h1>
               
               {/* Subtitle */}
@@ -68,7 +120,7 @@ export default function Home() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1, delay: 0.5 }}
               >
-                {t.hero.subtitle}
+                {heroArtwork && heroArtwork.year ? `${heroArtwork.year} • ${heroArtwork.dimensions}` : t.hero.subtitle}
               </motion.p>
 
               {/* CTA Button */}
@@ -79,10 +131,15 @@ export default function Home() {
                 className="pt-4"
               >
                 <Link
-                  to="/gallery"
+                  to={heroArtwork ? `/artwork/${heroArtwork.id}` : '/gallery'}
                   className="group inline-flex items-center gap-3 px-10 py-5 bg-foreground text-background font-medium tracking-wide hover:bg-foreground/90 transition-all duration-300"
                 >
-                  <span className="uppercase tracking-wider text-sm">{t.hero.cta}</span>
+                  <span className="uppercase tracking-wider text-sm">
+                    {heroArtwork 
+                      ? (language === 'ru' ? 'Смотреть работу' : 'View Artwork')
+                      : t.hero.cta
+                    }
+                  </span>
                   <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                 </Link>
               </motion.div>
