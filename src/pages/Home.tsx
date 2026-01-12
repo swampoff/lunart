@@ -8,22 +8,45 @@ import { SEOHead } from '@/components/seo/SEOHead';
 import { ArrowRight, Sparkles, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Artwork } from '@/types/artwork';
 
-interface Artwork {
+interface DbArtwork {
   id: string;
   title: string;
   title_en: string;
+  description: string | null;
+  description_en: string | null;
   image_url: string;
   price: number;
   price_usd: number;
   status: string;
   dimensions: string;
-  year?: number | null;
+  medium: string | null;
+  year: number | null;
 }
+
+// Map database artwork to frontend type
+const mapDbToArtwork = (db: DbArtwork): Artwork => ({
+  id: db.id,
+  title: db.title,
+  titleEn: db.title_en,
+  description: db.description || '',
+  descriptionEn: db.description_en || '',
+  price: db.price,
+  priceUsd: db.price_usd,
+  style: 'modern',
+  size: 'medium',
+  dimensions: db.dimensions,
+  medium: db.medium || '',
+  imageUrl: db.image_url,
+  status: db.status === 'sold' ? 'sold' : 'for_sale',
+  createdAt: new Date().toISOString(),
+  year: db.year || new Date().getFullYear(),
+});
 
 export default function Home() {
   const { t, language } = useLanguage();
-  const [heroArtwork, setHeroArtwork] = useState<Artwork | null>(null);
+  const [heroArtwork, setHeroArtwork] = useState<DbArtwork | null>(null);
   const [featuredArtworks, setFeaturedArtworks] = useState<Artwork[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -35,7 +58,7 @@ export default function Home() {
     try {
       const { data, error } = await supabase
         .from('artworks')
-        .select('id, title, title_en, image_url, price, price_usd, status, dimensions, year')
+        .select('id, title, title_en, description, description_en, image_url, price, price_usd, status, dimensions, medium, year')
         .eq('visibility', 'visible')
         .order('sort_order')
         .limit(4);
@@ -43,8 +66,8 @@ export default function Home() {
       if (error) throw error;
 
       if (data && data.length > 0) {
-        setHeroArtwork(data[0]);
-        setFeaturedArtworks(data.slice(1, 4));
+        setHeroArtwork(data[0] as DbArtwork);
+        setFeaturedArtworks(data.slice(1, 4).map(mapDbToArtwork));
       }
     } catch (error) {
       console.error('Error fetching artworks:', error);
