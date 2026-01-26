@@ -11,7 +11,24 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Upload, Image as ImageIcon, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Loader2, Upload, Image as ImageIcon, X, GripVertical } from 'lucide-react';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  rectSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 const artworkSchema = z.object({
   title: z.string().trim().min(1, 'Название обязательно').max(200),
@@ -73,6 +90,71 @@ interface ArtworkFormProps {
 
 const MAX_IMAGES = 5;
 
+// Sortable image component for drag and drop
+interface SortableImageProps {
+  id: string;
+  image: ArtworkImage;
+  index: number;
+  isMain: boolean;
+  language: string;
+  onRemove: (index: number) => void;
+}
+
+function SortableImage({ id, image, index, isMain, language, onRemove }: SortableImageProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 10 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="relative group aspect-[3/4] bg-muted rounded-lg overflow-hidden border border-border"
+    >
+      <img
+        src={image.image_url}
+        alt={`Image ${index + 1}`}
+        className="w-full h-full object-cover"
+      />
+      {isMain && (
+        <div className="absolute top-1 left-1 bg-primary text-primary-foreground text-[10px] px-1.5 py-0.5 rounded">
+          {language === 'ru' ? 'Главная' : 'Main'}
+        </div>
+      )}
+      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+        <div
+          {...attributes}
+          {...listeners}
+          className="cursor-grab active:cursor-grabbing p-1.5 rounded bg-white/20 hover:bg-white/30 transition-colors"
+        >
+          <GripVertical className="w-4 h-4 text-white" />
+        </div>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 text-white hover:bg-white/20"
+          onClick={() => onRemove(index)}
+        >
+          <X className="w-4 h-4" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 export function ArtworkForm({ open, onOpenChange, artwork, onSuccess, collections = [] }: ArtworkFormProps) {
   const { t, language } = useLanguage();
   const { toast } = useToast();
@@ -81,6 +163,31 @@ export function ArtworkForm({ open, onOpenChange, artwork, onSuccess, collection
   const [images, setImages] = useState<ArtworkImage[]>([]);
   const [loadingImages, setLoadingImages] = useState(false);
   const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(artwork?.collection_id || null);
+
+  // DnD sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      const oldIndex = images.findIndex((img) => `img-${img.sort_order}` === active.id);
+      const newIndex = images.findIndex((img) => `img-${img.sort_order}` === over.id);
+      const reordered = arrayMove(images, oldIndex, newIndex).map((img, i) => ({
+        ...img,
+        sort_order: i,
+      }));
+      setImages(reordered);
+    }
+  };
 
   const { register, handleSubmit, formState: { errors }, setValue, watch, reset } = useForm<ArtworkFormData>({
     resolver: zodResolver(artworkSchema),
@@ -417,58 +524,30 @@ export function ArtworkForm({ open, onOpenChange, artwork, onSuccess, collection
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-5 gap-3">
-                {images.map((image, index) => (
-                  <div 
-                    key={index} 
-                    className="relative group aspect-[3/4] bg-muted rounded-lg overflow-hidden border border-border"
-                  >
-                    <img 
-                      src={image.image_url} 
-                      alt={`Image ${index + 1}`} 
-                      className="w-full h-full object-cover"
-                    />
-                    {index === 0 && (
-                      <div className="absolute top-1 left-1 bg-primary text-primary-foreground text-[10px] px-1.5 py-0.5 rounded">
-                        {language === 'ru' ? 'Главная' : 'Main'}
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
-                      {index > 0 && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 text-white hover:bg-white/20"
-                          onClick={() => moveImage(index, index - 1)}
-                        >
-                          <ChevronLeft className="w-4 h-4" />
-                        </Button>
-                      )}
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 text-white hover:bg-white/20"
-                        onClick={() => removeImage(index)}
-                      >
-                        <X className="w-4 h-4" />
-                      </Button>
-                      {index < images.length - 1 && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 text-white hover:bg-white/20"
-                          onClick={() => moveImage(index, index + 1)}
-                        >
-                          <ChevronRight className="w-4 h-4" />
-                        </Button>
-                      )}
-                    </div>
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={images.map((img) => `img-${img.sort_order}`)}
+                  strategy={rectSortingStrategy}
+                >
+                  <div className="grid grid-cols-5 gap-3">
+                    {images.map((image, index) => (
+                      <SortableImage
+                        key={`img-${image.sort_order}`}
+                        id={`img-${image.sort_order}`}
+                        image={image}
+                        index={index}
+                        isMain={index === 0}
+                        language={language}
+                        onRemove={removeImage}
+                      />
+                    ))}
                   </div>
-                ))}
-              </div>
+                </SortableContext>
+              </DndContext>
             )}
             <p className="text-xs text-muted-foreground">
               JPEG, PNG, WebP. {language === 'ru' ? 'Макс. 10MB на файл.' : 'Max 10MB per file.'}
