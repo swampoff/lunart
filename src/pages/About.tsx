@@ -4,6 +4,7 @@ import { photographerInfo } from '@/data/photographer';
 import { Separator } from '@/components/ui/separator';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { useLanguage } from '@/contexts/LanguageContext';
+import artistStudioPhoto from '@/assets/artist-studio.jpg';
 
 /**
  * About page with photographer biography and professional information
@@ -52,20 +53,11 @@ export default function About() {
               transition={{ duration: 0.4 }}
             >
               <div className="aspect-[3/4] relative overflow-hidden rounded-sm bg-muted">
-                <video
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  preload="metadata"
+                <img
+                  src={artistStudioPhoto}
+                  alt="Luna in her art studio"
                   className="absolute inset-0 w-full h-full object-cover"
-                  onError={(e) => {
-                    const target = e.currentTarget;
-                    target.style.display = 'none';
-                  }}
-                >
-                  <source src="/videos/eva-artwork.mp4" type="video/mp4" />
-                </video>
+                />
               </div>
               
               {/* Social Links */}
