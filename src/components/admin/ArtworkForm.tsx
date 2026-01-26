@@ -14,16 +14,20 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, Upload, Image as ImageIcon, X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const artworkSchema = z.object({
-  title: z.string().min(1, 'Название обязательно').max(200),
-  title_en: z.string().min(1, 'English title is required').max(200),
-  description: z.string().max(2000).optional(),
-  description_en: z.string().max(2000).optional(),
-  dimensions: z.string().min(1, 'Размеры обязательны').max(100),
-  medium: z.string().max(200).optional(),
-  medium_en: z.string().max(200).optional(),
-  price: z.number().min(0, 'Цена должна быть положительной'),
-  price_usd: z.number().min(0, 'USD price must be positive'),
-  year: z.number().min(1900).max(new Date().getFullYear()).optional(),
+  title: z.string().trim().min(1, 'Название обязательно').max(200),
+  title_en: z.string().trim().min(1, 'English title is required').max(200),
+  description: z.string().trim().max(2000).optional().or(z.literal('')),
+  description_en: z.string().trim().max(2000).optional().or(z.literal('')),
+  dimensions: z.string().trim().min(1, 'Размеры обязательны').max(100),
+  medium: z.string().trim().max(200).optional().or(z.literal('')),
+  medium_en: z.string().trim().max(200).optional().or(z.literal('')),
+  price: z.coerce.number().min(0, 'Цена должна быть положительной'),
+  price_usd: z.coerce.number().min(0, 'USD price must be positive'),
+  year: z.union([
+    z.coerce.number().min(1900).max(new Date().getFullYear()),
+    z.literal('').transform(() => undefined),
+    z.nan().transform(() => undefined),
+  ]).optional(),
   status: z.enum(['for_sale', 'sold', 'reserved']),
 });
 
@@ -97,11 +101,25 @@ export function ArtworkForm({ open, onOpenChange, artwork, onSuccess, collection
 
   const status = watch('status');
 
+  // Reset form when artwork changes or dialog opens
   useEffect(() => {
     if (open) {
       setSelectedCollectionId(artwork?.collection_id || null);
+      reset({
+        title: artwork?.title || '',
+        title_en: artwork?.title_en || '',
+        description: artwork?.description || '',
+        description_en: artwork?.description_en || '',
+        dimensions: artwork?.dimensions || '',
+        medium: artwork?.medium || '',
+        medium_en: artwork?.medium_en || '',
+        price: artwork?.price || 0,
+        price_usd: artwork?.price_usd || 0,
+        year: artwork?.year || undefined,
+        status: (artwork?.status as 'for_sale' | 'sold' | 'reserved') || 'for_sale',
+      });
     }
-  }, [open, artwork]);
+  }, [open, artwork, reset]);
 
   useEffect(() => {
     if (open && artwork) {
@@ -495,7 +513,9 @@ export function ArtworkForm({ open, onOpenChange, artwork, onSuccess, collection
               <Input
                 id="year"
                 type="number"
-                {...register('year', { valueAsNumber: true })}
+                {...register('year', { 
+                  setValueAs: (v) => v === '' || v === undefined ? undefined : Number(v)
+                })}
                 placeholder="2024"
               />
             </div>
@@ -552,7 +572,10 @@ export function ArtworkForm({ open, onOpenChange, artwork, onSuccess, collection
               <Input
                 id="price"
                 type="number"
-                {...register('price', { valueAsNumber: true })}
+                min="0"
+                {...register('price', { 
+                  setValueAs: (v) => v === '' ? 0 : Number(v)
+                })}
                 placeholder="100000"
               />
               {errors.price && <p className="text-xs text-destructive">{errors.price.message}</p>}
@@ -562,7 +585,10 @@ export function ArtworkForm({ open, onOpenChange, artwork, onSuccess, collection
               <Input
                 id="price_usd"
                 type="number"
-                {...register('price_usd', { valueAsNumber: true })}
+                min="0"
+                {...register('price_usd', { 
+                  setValueAs: (v) => v === '' ? 0 : Number(v)
+                })}
                 placeholder="1100"
               />
               {errors.price_usd && <p className="text-xs text-destructive">{errors.price_usd.message}</p>}
