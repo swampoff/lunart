@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -52,6 +52,7 @@ type ArtworkFormData = z.infer<typeof artworkSchema>;
 
 interface ArtworkImage {
   id?: string;
+  uid: string; // stable unique ID for DnD and React keys
   image_url: string;
   sort_order: number;
 }
@@ -90,9 +91,14 @@ interface ArtworkFormProps {
 
 const MAX_IMAGES = 5;
 
+let uidCounter = 0;
+function generateUid(): string {
+  uidCounter += 1;
+  return `img-uid-${Date.now()}-${uidCounter}`;
+}
+
 // Sortable image component for drag and drop
 interface SortableImageProps {
-  id: string;
   image: ArtworkImage;
   index: number;
   isMain: boolean;
@@ -100,7 +106,7 @@ interface SortableImageProps {
   onRemove: (index: number) => void;
 }
 
-function SortableImage({ id, image, index, isMain, language, onRemove }: SortableImageProps) {
+function SortableImage({ image, index, isMain, language, onRemove }: SortableImageProps) {
   const {
     attributes,
     listeners,
@@ -108,7 +114,7 @@ function SortableImage({ id, image, index, isMain, language, onRemove }: Sortabl
     transform,
     transition,
     isDragging,
-  } = useSortable({ id });
+  } = useSortable({ id: image.uid });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -163,6 +169,7 @@ export function ArtworkForm({ open, onOpenChange, artwork, onSuccess, collection
   const [images, setImages] = useState<ArtworkImage[]>([]);
   const [loadingImages, setLoadingImages] = useState(false);
   const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(artwork?.collection_id || null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // DnD sensors
   const sensors = useSensors(
@@ -179,8 +186,9 @@ export function ArtworkForm({ open, onOpenChange, artwork, onSuccess, collection
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (over && active.id !== over.id) {
-      const oldIndex = images.findIndex((img) => `img-${img.sort_order}` === active.id);
-      const newIndex = images.findIndex((img) => `img-${img.sort_order}` === over.id);
+      const oldIndex = images.findIndex((img) => img.uid === active.id);
+      const newIndex = images.findIndex((img) => img.uid === over.id);
+      if (oldIndex === -1 || newIndex === -1) return;
       const reordered = arrayMove(images, oldIndex, newIndex).map((img, i) => ({
         ...img,
         sort_order: i,
@@ -250,13 +258,13 @@ export function ArtworkForm({ open, onOpenChange, artwork, onSuccess, collection
       if (error) throw error;
       
       if (!data || data.length === 0) {
-        setImages([{ image_url: artwork.image_url, sort_order: 0 }]);
+        setImages([{ uid: generateUid(), image_url: artwork.image_url, sort_order: 0 }]);
       } else {
-        setImages(data);
+        setImages(data.map((img) => ({ ...img, uid: img.id || generateUid() })));
       }
     } catch (error) {
       console.error('Error loading images:', error);
-      setImages([{ image_url: artwork.image_url, sort_order: 0 }]);
+      setImages([{ uid: generateUid(), image_url: artwork.image_url, sort_order: 0 }]);
     } finally {
       setLoadingImages(false);
     }
@@ -312,12 +320,13 @@ export function ArtworkForm({ open, onOpenChange, artwork, onSuccess, collection
           .getPublicUrl(fileName);
 
         uploadedImages.push({
+          uid: generateUid(),
           image_url: publicUrl,
           sort_order: images.length + uploadedImages.length,
         });
       }
 
-      setImages([...images, ...uploadedImages]);
+      setImages(prev => [...prev, ...uploadedImages]);
       toast({ 
         title: language === 'ru' ? 'Изображения загружены' : 'Images uploaded successfully' 
       });
@@ -329,20 +338,18 @@ export function ArtworkForm({ open, onOpenChange, artwork, onSuccess, collection
       });
     } finally {
       setUploading(false);
+      // Reset file input so the same file can be selected again
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
   const removeImage = (index: number) => {
-    const newImages = images.filter((_, i) => i !== index);
-    setImages(newImages.map((img, i) => ({ ...img, sort_order: i })));
-  };
-
-  const moveImage = (fromIndex: number, toIndex: number) => {
-    if (toIndex < 0 || toIndex >= images.length) return;
-    const newImages = [...images];
-    const [moved] = newImages.splice(fromIndex, 1);
-    newImages.splice(toIndex, 0, moved);
-    setImages(newImages.map((img, i) => ({ ...img, sort_order: i })));
+    setImages(prev => {
+      const newImages = prev.filter((_, i) => i !== index);
+      return newImages.map((img, i) => ({ ...img, sort_order: i }));
+    });
   };
 
   const onSubmit = async (data: ArtworkFormData) => {
@@ -436,25 +443,9 @@ export function ArtworkForm({ open, onOpenChange, artwork, onSuccess, collection
   };
 
   const handleClose = () => {
-    reset({
-      title: artwork?.title || '',
-      title_en: artwork?.title_en || '',
-      description: artwork?.description || '',
-      description_en: artwork?.description_en || '',
-      dimensions: artwork?.dimensions || '',
-      medium: artwork?.medium || '',
-      medium_en: artwork?.medium_en || '',
-      price: artwork?.price || 0,
-      price_usd: artwork?.price_usd || 0,
-      year: artwork?.year || undefined,
-      status: (artwork?.status as 'for_sale' | 'sold' | 'reserved') || 'for_sale',
-    });
-    setSelectedCollectionId(artwork?.collection_id || null);
-    if (artwork) {
-      setImages([{ image_url: artwork.image_url, sort_order: 0 }]);
-    } else {
-      setImages([]);
-    }
+    reset();
+    setSelectedCollectionId(null);
+    setImages([]);
     onOpenChange(false);
   };
 
@@ -487,6 +478,7 @@ export function ArtworkForm({ open, onOpenChange, artwork, onSuccess, collection
               {images.length < MAX_IMAGES && (
                 <div className="relative">
                   <input
+                    ref={fileInputRef}
                     type="file"
                     accept="image/*"
                     multiple
@@ -530,14 +522,13 @@ export function ArtworkForm({ open, onOpenChange, artwork, onSuccess, collection
                 onDragEnd={handleDragEnd}
               >
                 <SortableContext
-                  items={images.map((img) => `img-${img.sort_order}`)}
+                  items={images.map((img) => img.uid)}
                   strategy={rectSortingStrategy}
                 >
                   <div className="grid grid-cols-5 gap-3">
                     {images.map((image, index) => (
                       <SortableImage
-                        key={`img-${image.sort_order}`}
-                        id={`img-${image.sort_order}`}
+                        key={image.uid}
                         image={image}
                         index={index}
                         isMain={index === 0}
@@ -597,6 +588,7 @@ export function ArtworkForm({ open, onOpenChange, artwork, onSuccess, collection
                 })}
                 placeholder="2024"
               />
+              {errors.year && 'message' in errors.year && <p className="text-xs text-destructive">{errors.year.message as string}</p>}
             </div>
             <div className="space-y-2">
               <Label>{language === 'ru' ? 'Статус' : 'Status'}</Label>
