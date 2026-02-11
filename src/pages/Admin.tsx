@@ -57,14 +57,14 @@ export default function Admin() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-background flex flex-col md:flex-row">
       <AdminSidebar 
         activeTab={activeTab} 
         onTabChange={setActiveTab} 
         onSignOut={handleSignOut}
       />
       
-      <main className="flex-1 p-8 overflow-auto">
+      <main className="flex-1 p-4 md:p-8 overflow-auto">
         {activeTab === 'dashboard' && (
           <Dashboard 
             stats={stats} 
