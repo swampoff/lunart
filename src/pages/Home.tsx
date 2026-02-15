@@ -170,7 +170,7 @@ export default function Home() {
               <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-20">
                 <div className="space-y-4">
                   <p className="text-sm uppercase tracking-[0.3em] text-muted-foreground">{t.home.featuredWorks}</p>
-                  <h2 className="text-4xl md:text-6xl font-serif font-light tracking-tight">
+                  <h2 className="text-4xl md:text-6xl font-serif tracking-tight">
                     {t.gallery.title}
                   </h2>
                 </div>
@@ -200,7 +200,7 @@ export default function Home() {
               <div className="grid md:grid-cols-2 gap-16 items-center">
                 <div className="space-y-8">
                   <p className="text-sm uppercase tracking-[0.3em] text-muted-foreground">{t.home.aboutArtist}</p>
-                  <h2 className="text-4xl md:text-5xl font-serif font-light">
+                  <h2 className="text-4xl md:text-5xl font-serif">
                     {t.home.artistTitle}
                   </h2>
                   <p className="text-lg text-muted-foreground leading-relaxed">

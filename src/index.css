@@ -8,7 +8,7 @@
 :root {
   /* Premium light theme - warm ivory with rich blacks */
   --background: hsl(40 20% 98%);
-  --foreground: hsl(0 0% 8%);
+  --foreground: hsl(0 0% 5%);
   --card: hsl(40 15% 97%);
   --card-foreground: hsl(0 0% 8%);
   --popover: hsl(40 20% 98%);
@@ -186,11 +186,31 @@
     @apply bg-background text-foreground font-sans antialiased;
     font-feature-settings: 'cv11', 'ss01';
     text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  :root body {
+    font-weight: 400;
   }
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-serif;
     letter-spacing: -0.01em;
+  }
+
+  /* Ensure readable contrast in light mode */
+  :root:not(.dark) h1,
+  :root:not(.dark) h2,
+  :root:not(.dark) h3 {
+    font-weight: 500;
+  }
+
+  :root:not(.dark) p,
+  :root:not(.dark) span,
+  :root:not(.dark) a,
+  :root:not(.dark) label {
+    font-weight: 400;
   }
 }
 
@@ -207,7 +227,7 @@
   /* Premium text styles */
   .text-display {
     font-family: var(--font-serif);
-    font-weight: 300;
+    font-weight: 400;
     letter-spacing: 0.02em;
   }
   
