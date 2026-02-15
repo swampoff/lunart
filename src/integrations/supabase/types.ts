@@ -64,6 +64,7 @@ export type Database = {
           title: string
           title_en: string
           updated_at: string
+          video_url: string | null
           visibility: string
           year: number | null
         }
@@ -84,6 +85,7 @@ export type Database = {
           title: string
           title_en: string
           updated_at?: string
+          video_url?: string | null
           visibility?: string
           year?: number | null
         }
@@ -104,6 +106,7 @@ export type Database = {
           title?: string
           title_en?: string
           updated_at?: string
+          video_url?: string | null
           visibility?: string
           year?: number | null
         }
