@@ -83,7 +83,7 @@ export function ArtworkCard({ artwork, index = 0, onClick }: ArtworkCardProps) {
       {/* Info */}
       <div className="mt-5 space-y-2">
         <div className="flex items-start justify-between gap-4">
-          <h3 className="font-serif text-xl font-light tracking-tight group-hover:text-muted-foreground transition-colors">
+          <h3 className="font-serif text-xl tracking-tight group-hover:text-muted-foreground transition-colors">
             {title}
           </h3>
           <ArrowUpRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-1" />
