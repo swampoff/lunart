@@ -54,8 +54,8 @@ export default function ArtworkDetail() {
                 alt={title}
                 className="w-full h-full object-cover"
               />
-              <div className={`absolute top-4 left-4 px-3 py-1 text-xs uppercase tracking-widest font-medium ${
-                isSold ? 'status-sold' : 'status-for-sale'
+              <div className={`absolute top-4 left-4 px-3 py-1.5 text-xs uppercase tracking-widest font-semibold backdrop-blur-md ${
+                isSold ? 'bg-foreground/90 text-primary-foreground' : 'bg-background/95 text-foreground border border-border shadow-sm'
               }`}>
                 {isSold ? t.gallery.sold : t.gallery.forSale}
               </div>

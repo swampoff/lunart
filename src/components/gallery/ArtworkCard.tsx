@@ -41,10 +41,10 @@ export function ArtworkCard({ artwork, index = 0, onClick }: ArtworkCardProps) {
         />
         
         {/* Status Badge */}
-        <div className={`absolute top-4 left-4 px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] font-medium backdrop-blur-sm ${
+        <div className={`absolute top-4 left-4 px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] font-semibold backdrop-blur-md ${
           isSold 
-            ? 'bg-foreground/80 text-background' 
-            : 'bg-background/90 text-foreground border border-border'
+            ? 'bg-foreground/90 text-primary-foreground' 
+            : 'bg-background/95 text-foreground border border-border shadow-sm'
         }`}>
           {isSold ? t.gallery.sold : t.gallery.forSale}
         </div>
