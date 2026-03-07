@@ -61,7 +61,7 @@ export function GallerySlider({ artworks, onClose, initialIndex = 0 }: GallerySl
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm"
+      className="fixed inset-0 z-50 bg-background backdrop-blur-sm overflow-hidden"
     >
       {/* Close Button */}
       <Button
@@ -93,9 +93,9 @@ export function GallerySlider({ artworks, onClose, initialIndex = 0 }: GallerySl
       </Button>
 
       {/* Content */}
-      <div className="h-full flex flex-col lg:flex-row items-center justify-center p-8 lg:p-16 gap-8 lg:gap-16">
+      <div className="h-full overflow-y-auto flex flex-col lg:flex-row items-start lg:items-center justify-center p-8 pt-20 lg:p-16 lg:pt-16 gap-8 lg:gap-16">
         {/* Image */}
-        <div className="relative w-full lg:w-1/2 h-[50vh] lg:h-[80vh] overflow-hidden">
+        <div className="relative w-full lg:w-1/2 h-[40vh] lg:h-[75vh] overflow-hidden flex-shrink-0">
           <AnimatePresence initial={false} custom={direction}>
             <motion.img
               key={currentIndex}
@@ -121,7 +121,7 @@ export function GallerySlider({ artworks, onClose, initialIndex = 0 }: GallerySl
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="w-full lg:w-1/3 space-y-6"
+          className="w-full lg:w-1/3 space-y-6 flex-shrink-0 pb-8"
         >
           <div className={`inline-block px-3 py-1.5 text-xs uppercase tracking-widest font-semibold backdrop-blur-md ${
             isSold ? 'bg-foreground/90 text-primary-foreground' : 'bg-background/95 text-foreground border border-border shadow-sm'
@@ -137,7 +137,7 @@ export function GallerySlider({ artworks, onClose, initialIndex = 0 }: GallerySl
             <p>{artwork.year}</p>
           </div>
 
-          <p className="text-lg leading-relaxed">{description}</p>
+          <p className="text-base leading-relaxed line-clamp-6">{description}</p>
 
           <p className="text-2xl font-medium">{price}</p>
 
