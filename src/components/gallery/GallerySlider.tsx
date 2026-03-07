@@ -93,7 +93,7 @@ export function GallerySlider({ artworks, onClose, initialIndex = 0 }: GallerySl
       </Button>
 
       {/* Content */}
-      <div className="h-full flex flex-col lg:flex-row items-center justify-center p-8 lg:p-16 gap-8 lg:gap-16">
+      <div className="h-full overflow-y-auto flex flex-col lg:flex-row items-start lg:items-center justify-center p-8 pt-20 lg:p-16 lg:pt-16 gap-8 lg:gap-16">
         {/* Image */}
         <div className="relative w-full lg:w-1/2 h-[50vh] lg:h-[80vh] overflow-hidden">
           <AnimatePresence initial={false} custom={direction}>
