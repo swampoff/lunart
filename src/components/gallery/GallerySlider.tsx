@@ -121,7 +121,7 @@ export function GallerySlider({ artworks, onClose, initialIndex = 0 }: GallerySl
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="w-full lg:w-1/3 space-y-6"
+          className="w-full lg:w-1/3 space-y-6 flex-shrink-0 pb-8"
         >
           <div className={`inline-block px-3 py-1.5 text-xs uppercase tracking-widest font-semibold backdrop-blur-md ${
             isSold ? 'bg-foreground/90 text-primary-foreground' : 'bg-background/95 text-foreground border border-border shadow-sm'
