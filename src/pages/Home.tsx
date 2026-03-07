@@ -217,7 +217,7 @@ export default function Home() {
                 <div className="relative">
                   <div className="aspect-[4/5] bg-muted overflow-hidden">
                     <img
-                      src="https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?w=800&q=80"
+                      src="https://hvjlzajfbqspcnxpbrwg.supabase.co/storage/v1/object/public/artworks/buddha/budda1.jpg"
                       alt="Artist at work"
                       className="w-full h-full object-cover artwork-hover"
                     />
