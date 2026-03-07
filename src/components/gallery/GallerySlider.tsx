@@ -137,7 +137,7 @@ export function GallerySlider({ artworks, onClose, initialIndex = 0 }: GallerySl
             <p>{artwork.year}</p>
           </div>
 
-          <p className="text-lg leading-relaxed">{description}</p>
+          <p className="text-base leading-relaxed line-clamp-6">{description}</p>
 
           <p className="text-2xl font-medium">{price}</p>
 
