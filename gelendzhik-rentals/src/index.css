@@ -1,0 +1,42 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+
+  --color-ink: #0d2b36;
+  --color-ink-soft: #47606b;
+  --color-sea-950: #072f3d;
+  --color-sea-900: #0f5c72;
+  --color-sea-700: #14748f;
+  --color-sea-500: #1f97b5;
+  --color-sea-300: #7fc2d9;
+  --color-sea-100: #daeef5;
+  --color-sea-50: #eff8fb;
+  --color-sand: #f8f4ed;
+  --color-sand-dark: #ece3d5;
+  --color-sun: #e8963a;
+  --color-sun-soft: #ffd98e;
+
+  --radius-card: 1.25rem;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-sand);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background-color: var(--color-sea-300);
+  color: var(--color-sea-950);
+}
+
+/* Скрываем нативную стрелку у select, чтобы поля поиска выглядели одинаково во всех браузерах. */
+select {
+  appearance: none;
+}
