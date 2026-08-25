@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 import { expireStaleHolds } from './availability.js';
 import { bookingsRouter } from './routes/bookings.js';
 import { paymentsRouter } from './routes/payments.js';
-import { propertiesRouter } from './routes/properties.js';
+import { apartmentsRouter } from './routes/apartments.js';
 import { seed } from './seed.js';
 
 const isProduction = process.env.NODE_ENV === 'production';
@@ -19,7 +19,7 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', provider: process.env.PAYMENT_PROVIDER ?? 'mock' });
 });
 
-app.use('/api', propertiesRouter);
+app.use('/api', apartmentsRouter);
 app.use('/api', bookingsRouter);
 app.use('/api', paymentsRouter);
 

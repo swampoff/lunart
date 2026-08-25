@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" width="1200" height="800" role="img">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f7b267"/>
+      <stop offset="55%" stop-color="#f4845f"/>
+      <stop offset="100%" stop-color="#c75c6a"/>
+    </linearGradient>
+    <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8a5a72"/>
+      <stop offset="100%" stop-color="#5c3a58"/>
+    </linearGradient>
+  </defs>
+  
+    <rect width="1200" height="800" fill="url(#sky)"/>
+    <circle cx="361" cy="250" r="70" fill="#fff1c9" opacity="0.9"/>
+    <circle cx="361" cy="250" r="130" fill="#fff1c9" opacity="0.18"/>
+    <polygon points="0,800 0,433 200,446 400,356 600,366 800,453 1000,421 1200,341 1200,800" fill="#3b2440" opacity="0.55"/>
+    <polygon points="0,800 0,430 171,371 343,445 514,486 686,400 857,382 1029,472 1200,467 1200,800" fill="#3b2440" opacity="0.85"/>
+    <rect y="500" width="1200" height="300" fill="url(#sea)"/>
+    <g fill="#fff1c9" opacity="0.3">
+      <rect x="286" y="520" width="150" height="6" rx="3"/>
+      <rect x="292" y="550" width="138" height="6" rx="3"/>
+      <rect x="298" y="580" width="126" height="6" rx="3"/>
+      <rect x="304" y="610" width="114" height="6" rx="3"/>
+      <rect x="310" y="640" width="102" height="6" rx="3"/>
+      <rect x="316" y="670" width="90" height="6" rx="3"/>
+      <rect x="322" y="700" width="78" height="6" rx="3"/>
+      <rect x="328" y="730" width="66" height="6" rx="3"/>
+      <rect x="334" y="760" width="54" height="6" rx="3"/>
+    </g>
+</svg>

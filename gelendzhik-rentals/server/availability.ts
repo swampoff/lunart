@@ -21,23 +21,23 @@ export function expireStaleHolds(): number {
   return result.changes;
 }
 
-/** Занятые ночи объекта: и подтверждённые брони, и ручные блокировки владельца. */
-export function busyDates(propertyId: number, from = today(), to = addDays(today(), 365)): string[] {
+/** Занятые ночи апартаментов: и подтверждённые брони, и ручные блокировки владельца. */
+export function busyDates(apartmentId: number, from = today(), to = addDays(today(), 365)): string[] {
   expireStaleHolds();
 
   const bookings = db
     .prepare(
       `SELECT check_in, check_out FROM bookings
-        WHERE property_id = ?
+        WHERE apartment_id = ?
           AND status IN ('awaiting_payment', 'paid')
           AND check_out > ?
           AND check_in < ?`,
     )
-    .all(propertyId, from, to) as { check_in: string; check_out: string }[];
+    .all(apartmentId, from, to) as { check_in: string; check_out: string }[];
 
   const blocked = db
-    .prepare(`SELECT date FROM blocked_dates WHERE property_id = ? AND date >= ? AND date < ?`)
-    .all(propertyId, from, to) as { date: string }[];
+    .prepare(`SELECT date FROM blocked_dates WHERE apartment_id = ? AND date >= ? AND date < ?`)
+    .all(apartmentId, from, to) as { date: string }[];
 
   const dates = new Set<string>();
   for (const booking of bookings) {
@@ -53,53 +53,53 @@ export function busyDates(propertyId: number, from = today(), to = addDays(today
 }
 
 /**
- * Свободен ли объект на весь интервал.
+ * Свободны ли апартаменты на весь интервал.
  * Пересечение считаем по правилу «выезд одного гостя = заезд другого»:
  * интервалы конфликтуют, только если начало одного строго раньше конца другого.
  */
-export function isRangeAvailable(propertyId: number, checkIn: string, checkOut: string): boolean {
+export function isRangeAvailable(apartmentId: number, checkIn: string, checkOut: string): boolean {
   expireStaleHolds();
 
   const conflict = db
     .prepare(
       `SELECT 1 FROM bookings
-        WHERE property_id = ?
+        WHERE apartment_id = ?
           AND status IN ('awaiting_payment', 'paid')
           AND check_in < ?
           AND check_out > ?
         LIMIT 1`,
     )
-    .get(propertyId, checkOut, checkIn);
+    .get(apartmentId, checkOut, checkIn);
   if (conflict) return false;
 
   const blocked = db
-    .prepare(`SELECT 1 FROM blocked_dates WHERE property_id = ? AND date >= ? AND date < ? LIMIT 1`)
-    .get(propertyId, checkIn, checkOut);
+    .prepare(`SELECT 1 FROM blocked_dates WHERE apartment_id = ? AND date >= ? AND date < ? LIMIT 1`)
+    .get(apartmentId, checkIn, checkOut);
 
   return !blocked;
 }
 
-/** Идентификаторы объектов, свободных на весь интервал — для фильтра в каталоге. */
-export function availablePropertyIds(checkIn: string, checkOut: string): Set<number> {
+/** Идентификаторы апартаментов, свободных на весь интервал — для фильтра в списке. */
+export function availableApartmentIds(checkIn: string, checkOut: string): Set<number> {
   expireStaleHolds();
 
-  const all = db.prepare(`SELECT id FROM properties`).all() as { id: number }[];
+  const all = db.prepare(`SELECT id FROM apartments`).all() as { id: number }[];
   const busy = new Set<number>();
 
   const conflicting = db
     .prepare(
-      `SELECT DISTINCT property_id FROM bookings
+      `SELECT DISTINCT apartment_id FROM bookings
         WHERE status IN ('awaiting_payment', 'paid')
           AND check_in < ?
           AND check_out > ?`,
     )
-    .all(checkOut, checkIn) as { property_id: number }[];
-  for (const row of conflicting) busy.add(row.property_id);
+    .all(checkOut, checkIn) as { apartment_id: number }[];
+  for (const row of conflicting) busy.add(row.apartment_id);
 
   const blocked = db
-    .prepare(`SELECT DISTINCT property_id FROM blocked_dates WHERE date >= ? AND date < ?`)
-    .all(checkIn, checkOut) as { property_id: number }[];
-  for (const row of blocked) busy.add(row.property_id);
+    .prepare(`SELECT DISTINCT apartment_id FROM blocked_dates WHERE date >= ? AND date < ?`)
+    .all(checkIn, checkOut) as { apartment_id: number }[];
+  for (const row of blocked) busy.add(row.apartment_id);
 
   return new Set(all.map((p) => p.id).filter((id) => !busy.has(id)));
 }

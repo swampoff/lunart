@@ -1,9 +1,7 @@
-import { MessageCircle, Phone, Waves } from 'lucide-react';
+import { MapPin, MessageCircle, Phone, Waves } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Link, NavLink } from 'react-router-dom';
-
-const PHONE = '+7 (918) 000-00-00';
-const PHONE_HREF = 'tel:+79180000000';
+import { useHouse } from '@/lib/useHouse';
 
 export function Layout({ children }: { children: ReactNode }) {
   return (
@@ -16,6 +14,8 @@ export function Layout({ children }: { children: ReactNode }) {
 }
 
 function Header() {
+  const house = useHouse();
+
   const linkClass = ({ isActive }: { isActive: boolean }) =>
     [
       'rounded-lg px-3 py-2 text-sm font-medium transition',
@@ -30,41 +30,51 @@ function Header() {
             <Waves className="size-5" />
           </span>
           <span className="leading-tight">
-            Геленджик
-            <span className="block text-xs font-medium text-ink-soft">аренда квартир</span>
+            {house?.name ?? 'Апартаменты у моря'}
+            <span className="block text-xs font-medium text-ink-soft">
+              {house ? `${house.area}, Геленджик` : 'Геленджик'}
+            </span>
           </span>
         </Link>
 
         <nav className="hidden items-center gap-1 sm:flex">
-          <NavLink to="/catalog" className={linkClass}>
-            Все квартиры
+          <NavLink to="/apartments" className={linkClass}>
+            Апартаменты
+          </NavLink>
+          <NavLink to="/house" className={linkClass}>
+            О доме
           </NavLink>
           <NavLink to="/booking" className={linkClass}>
             Моя бронь
           </NavLink>
         </nav>
 
-        <a
-          href={PHONE_HREF}
-          className="flex items-center gap-2 rounded-xl border border-sea-900/15 px-3 py-2 text-sm font-semibold text-sea-900 transition hover:bg-sea-50"
-        >
-          <Phone className="size-4" />
-          <span className="hidden md:inline">{PHONE}</span>
-        </a>
+        {house && (
+          <a
+            href={house.phoneHref}
+            className="flex items-center gap-2 rounded-xl border border-sea-900/15 px-3 py-2 text-sm font-semibold text-sea-900 transition hover:bg-sea-50"
+          >
+            <Phone className="size-4" />
+            <span className="hidden md:inline">{house.phone}</span>
+          </a>
+        )}
       </div>
     </header>
   );
 }
 
 function Footer() {
+  const house = useHouse();
+
   return (
     <footer className="mt-20 border-t border-sand-dark bg-white">
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:grid-cols-2 lg:grid-cols-4">
         <div>
-          <p className="font-extrabold">Геленджик · аренда квартир</p>
+          <p className="font-extrabold">{house?.name ?? 'Апартаменты у моря'}</p>
           <p className="mt-2 text-sm text-ink-soft">
-            Посуточная аренда проверенных квартир и апартаментов в Геленджике и окрестностях.
-            Бронирование онлайн, подтверждение сразу после предоплаты.
+            {house
+              ? `${house.apartmentsCount} апартаментов в частном доме, ${house.distanceToSea} минут пешком до моря. Бронирование онлайн, подтверждение сразу после предоплаты.`
+              : 'Апартаменты в частном доме в Геленджике.'}
           </p>
         </div>
 
@@ -72,8 +82,13 @@ function Footer() {
           <p className="font-semibold">Разделы</p>
           <ul className="mt-3 space-y-2 text-sm text-ink-soft">
             <li>
-              <Link to="/catalog" className="hover:text-sea-900">
-                Каталог квартир
+              <Link to="/apartments" className="hover:text-sea-900">
+                Все апартаменты
+              </Link>
+            </li>
+            <li>
+              <Link to="/house" className="hover:text-sea-900">
+                О доме и территории
               </Link>
             </li>
             <li>
@@ -85,17 +100,22 @@ function Footer() {
         </div>
 
         <div>
-          <p className="font-semibold">Связь</p>
+          <p className="font-semibold">Контакты</p>
           <ul className="mt-3 space-y-2 text-sm text-ink-soft">
-            <li>
-              <a href={PHONE_HREF} className="flex items-center gap-2 hover:text-sea-900">
-                <Phone className="size-4" /> {PHONE}
-              </a>
-            </li>
-            <li>
-              <span className="flex items-center gap-2">
-                <MessageCircle className="size-4" /> WhatsApp и Telegram
-              </span>
+            {house && (
+              <>
+                <li className="flex items-start gap-2">
+                  <MapPin className="mt-0.5 size-4 shrink-0" /> {house.address}
+                </li>
+                <li>
+                  <a href={house.phoneHref} className="flex items-center gap-2 hover:text-sea-900">
+                    <Phone className="size-4" /> {house.phone}
+                  </a>
+                </li>
+              </>
+            )}
+            <li className="flex items-center gap-2">
+              <MessageCircle className="size-4" /> WhatsApp и Telegram
             </li>
           </ul>
         </div>
@@ -110,7 +130,7 @@ function Footer() {
       </div>
 
       <div className="border-t border-sand-dark py-5 text-center text-xs text-ink-soft">
-        © {new Date().getFullYear()} Аренда квартир в Геленджике
+        © {new Date().getFullYear()} {house?.name ?? 'Апартаменты у моря'}
       </div>
     </footer>
   );

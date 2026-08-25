@@ -24,7 +24,7 @@ const STATUS_VIEW: Record<
   },
   cancelled: {
     title: 'Бронь отменена',
-    text: 'Даты вернулись в продажу. Если отменили случайно — забронируйте заново, пока квартира свободна.',
+    text: 'Даты вернулись в продажу. Если отменили случайно — забронируйте заново, пока апартаменты свободны.',
     tone: 'bg-red-50 text-red-900',
     icon: XCircle,
   },
@@ -152,10 +152,10 @@ function BookingDetails({ id }: { id: string }) {
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h2 className="text-lg font-extrabold">Бронь {booking.id}</h2>
           <Link
-            to={`/apartment/${booking.propertySlug}`}
+            to={`/apartment/${booking.apartmentSlug}`}
             className="text-sm font-semibold text-sea-700 underline underline-offset-4"
           >
-            {booking.propertyTitle}
+            {booking.apartmentTitle}
           </Link>
         </div>
 
@@ -211,7 +211,7 @@ function BookingDetails({ id }: { id: string }) {
 
         {(booking.status === 'expired' || booking.status === 'cancelled') && (
           <Link
-            to={`/apartment/${booking.propertySlug}`}
+            to={`/apartment/${booking.apartmentSlug}`}
             className="mt-6 flex items-center justify-center rounded-xl bg-sea-900 px-6 py-3.5 font-semibold text-white transition hover:bg-sea-700"
           >
             Забронировать заново

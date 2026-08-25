@@ -2,313 +2,203 @@ import { db } from './db.js';
 import { addDays, today } from './pricing.js';
 
 /**
- * Демонстрационный каталог. Реальные объекты владелец заводит через этот же
- * формат — набор полей совпадает с таблицей properties.
+ * Апартаменты дома. Владельцу: правьте этот массив — при следующем запуске
+ * сервера каталог обновится, а существующие брони не пострадают.
  */
-const PROPERTIES = [
+const APARTMENTS = [
   {
-    slug: 'morskoy-briz-centr',
-    title: 'Морской бриз у набережной',
-    district: 'Центр',
-    address: 'ул. Островского, 12',
-    short_description: 'Светлая однушка в двух шагах от центральной набережной и Лермонтовского бульвара.',
+    slug: 'studiya-briz',
+    title: 'Студия «Бриз»',
+    kind: 'Студия',
+    short_description: 'Компактная студия на первом этаже с отдельным входом и столиком во дворе.',
     description:
-      'Квартира на тихой стороне дома в самом центре Геленджика. До набережной — четыре минуты пешком, ' +
-      'рядом аквапарк «Бегемот», рынок и кофейни. В спальне ортопедический матрас и плотные шторы блэкаут, ' +
-      'в гостиной раскладывается диван, поэтому вчетвером спать комфортно. Кухня укомплектована посудой, ' +
-      'есть всё для завтрака: чайник, турка, тостер. Заселение бесконтактное — код от электронного замка ' +
-      'приходит в день заезда.',
-    rooms: 1,
-    max_guests: 4,
-    beds: 2,
-    area: 42,
-    floor: '3 из 9, есть лифт',
-    distance_to_sea: 4,
-    base_price: 3800,
-    cleaning_fee: 1200,
-    min_nights: 2,
-    rating: 4.8,
-    reviews_count: 127,
-    amenities: [
-      'Wi-Fi',
-      'Кондиционер',
-      'Кухня',
-      'Стиральная машина',
-      'Телевизор',
-      'Балкон',
-      'Лифт',
-      'Бесконтактное заселение',
-    ],
-    lat: 44.5622,
-    lng: 38.0768,
-  },
-  {
-    slug: 'panorama-tolstyy-mys',
-    title: 'Панорама на Толстом мысе',
-    district: 'Толстый мыс',
-    address: 'ул. Мичурина, 34',
-    short_description: 'Двухкомнатные апартаменты с видом на бухту и закат из панорамного окна.',
-    description:
-      'Верхний этаж нового дома на Толстом мысе: из гостиной видно всю Геленджикскую бухту, ' +
-      'а вечером — подсветку набережной на другом берегу. Две изолированные спальни, поэтому ' +
-      'удобно ехать двумя парами или семьёй с детьми. На кухне посудомоечная машина и духовка, ' +
-      'на лоджии — стол на четверых и шезлонги. Во дворе закрытая территория, охрана и место ' +
-      'для машины. До канатной дороги «Олимп» десять минут на автомобиле.',
-    rooms: 2,
-    max_guests: 5,
-    beds: 3,
-    area: 68,
-    floor: '11 из 12, два лифта',
-    distance_to_sea: 12,
-    base_price: 6900,
-    cleaning_fee: 1800,
-    min_nights: 3,
-    rating: 4.9,
-    reviews_count: 84,
-    amenities: [
-      'Wi-Fi',
-      'Кондиционер',
-      'Вид на море',
-      'Кухня',
-      'Посудомоечная машина',
-      'Стиральная машина',
-      'Парковка',
-      'Балкон',
-      'Лифт',
-      'Телевизор',
-    ],
-    lat: 44.5489,
-    lng: 38.0521,
-  },
-  {
-    slug: 'studiya-u-naberezhnoy',
-    title: 'Студия у Набережной',
-    district: 'Центр',
-    address: 'ул. Революционная, 7',
-    short_description: 'Компактная студия для двоих в минуте от моря — вариант для короткой поездки.',
-    description:
-      'Небольшая студия 26 м² с продуманной планировкой: двуспальная кровать, рабочий стол у окна ' +
-      'и кухонная зона с индукционной плитой. Дом стоит первой линией, до пляжа «Круча» одна минута ' +
-      'пешком. Подходит для пары на выходные или для командировки: интернет стабильный, 200 Мбит/с, ' +
-      'рядом несколько кофеен с розетками. Парковки во дворе нет, зато общественный транспорт ' +
-      'останавливается у подъезда.',
+      'Самые доступные апартаменты в доме: одна светлая комната, где двуспальная кровать отделена ' +
+      'от кухонного уголка барной стойкой. Вход отдельный, прямо со двора, поэтому возвращаться ' +
+      'с пляжа можно в любое время и никого не беспокоить. Под окном столик на двоих в тени ' +
+      'винограда — там удобно завтракать. Санузел свой, с душевой кабиной. Подойдёт паре, ' +
+      'которая приезжает ради моря и в квартире только ночует.',
     rooms: 1,
     max_guests: 2,
     beds: 1,
-    area: 26,
-    floor: '2 из 5, без лифта',
-    distance_to_sea: 1,
-    base_price: 2900,
-    cleaning_fee: 900,
+    area: 24,
+    floor: '1 этаж',
+    separate_entrance: 1,
+    base_price: 2800,
+    cleaning_fee: 800,
     min_nights: 2,
     rating: 4.6,
-    reviews_count: 213,
-    amenities: ['Wi-Fi', 'Кондиционер', 'Кухня', 'Телевизор', 'Первая линия', 'Бесконтактное заселение'],
-    lat: 44.5651,
-    lng: 38.0805,
+    reviews_count: 74,
+    amenities: [
+      'Отдельный вход',
+      'Кондиционер',
+      'Кухонный уголок',
+      'Холодильник',
+      'Свой санузел',
+      'Телевизор',
+      'Wi-Fi',
+      'Столик во дворе',
+    ],
   },
   {
-    slug: 'golubaya-buhta-apartamenty',
-    title: 'Апартаменты в Голубой бухте',
-    district: 'Голубая бухта',
-    address: 'ул. Одесская, 3к2',
-    short_description: 'Тихий район, сосны и галечный пляж без толпы в двухстах метрах от дома.',
+    slug: 'apartamenty-laguna',
+    title: 'Апартаменты «Лагуна»',
+    kind: 'Апартаменты с одной спальней',
+    short_description: 'Отдельная спальня, кухня-гостиная и своя терраса с выходом к бассейну.',
     description:
-      'Голубая бухта — это та часть Геленджика, где вместо шума набережной слышно только море ' +
-      'и цикад. Апартаменты в малоэтажном комплексе с бассейном и зоной барбекю. Две комнаты, ' +
-      'кондиционеры в каждой, детская кроватка и стульчик для кормления выдаются по запросу. ' +
-      'До пляжа двести метров вниз по тенистой аллее. Рядом Голубая бухта и дельфинарий, ' +
-      'до центра города десять минут на маршрутке.',
+      'Первый этаж с собственной террасой под навесом: стол на четверых, два кресла и вид ' +
+      'на бассейн в десяти шагах. Внутри отдельная спальня с двуспальной кроватью и кухня-гостиная, ' +
+      'где раскладывается кресло для третьего гостя. Кухня полноценная: варочная панель, духовка, ' +
+      'посуда на четверых. Родители с малышом обычно берут именно эти апартаменты — до бассейна ' +
+      'и площадки можно дойти босиком, не поднимаясь по лестницам.',
+    rooms: 2,
+    max_guests: 3,
+    beds: 2,
+    area: 34,
+    floor: '1 этаж',
+    separate_entrance: 1,
+    base_price: 3600,
+    cleaning_fee: 1000,
+    min_nights: 2,
+    rating: 4.8,
+    reviews_count: 96,
+    amenities: [
+      'Отдельный вход',
+      'Терраса',
+      'Кондиционер',
+      'Полноценная кухня',
+      'Стиральная машина',
+      'Свой санузел',
+      'Телевизор',
+      'Wi-Fi',
+      'Детская кроватка',
+    ],
+  },
+  {
+    slug: 'apartamenty-panorama',
+    title: 'Апартаменты «Панорама»',
+    kind: 'Апартаменты с одной спальней',
+    short_description: 'Второй этаж, балкон с видом на море и закат над бухтой.',
+    description:
+      'Единственные апартаменты в доме, откуда море видно прямо с балкона — над крышами соседних ' +
+      'домов открывается полоса воды и мыс. Вечером на балконе удобно сидеть вдвоём: там стоят ' +
+      'два кресла и низкий столик. Внутри спальня с большой кроватью, гостиная с диваном ' +
+      'на двоих взрослых и кухня со всем необходимым. Кондиционеры в обеих комнатах — в июле ' +
+      'это решает.',
     rooms: 2,
     max_guests: 4,
     beds: 2,
-    area: 54,
-    floor: '2 из 4, без лифта',
-    distance_to_sea: 3,
-    base_price: 5200,
-    cleaning_fee: 1500,
-    min_nights: 3,
-    rating: 4.7,
-    reviews_count: 96,
-    amenities: [
-      'Wi-Fi',
-      'Кондиционер',
-      'Кухня',
-      'Стиральная машина',
-      'Парковка',
-      'Бассейн',
-      'Мангал',
-      'Детская кроватка',
-      'Телевизор',
-    ],
-    lat: 44.5762,
-    lng: 37.9721,
-  },
-  {
-    slug: 'dom-s-dvorikom-kabardinka',
-    title: 'Дом с двориком в Кабардинке',
-    district: 'Кабардинка',
-    address: 'ул. Революционная, 41',
-    short_description: 'Отдельный дом на шесть человек с виноградной беседкой и мангалом.',
-    description:
-      'Целый дом в двух кварталах от кабардинской набережной — без соседей за стеной и с личным двором. ' +
-      'Три спальни, две ванные комнаты, большая кухня-гостиная с выходом в беседку, увитую виноградом. ' +
-      'Во дворе мангал, стол на восьмерых, качели и место для двух машин. Хозяин живёт по соседству ' +
-      'и помогает с бытовыми вопросами, но не тревожит без просьбы. До Старого парка пятнадцать минут пешком.',
-    rooms: 3,
-    max_guests: 6,
-    beds: 4,
-    area: 96,
-    floor: 'Отдельный дом, 2 этажа',
-    distance_to_sea: 8,
-    base_price: 8200,
-    cleaning_fee: 2500,
-    min_nights: 4,
-    rating: 4.9,
-    reviews_count: 61,
-    amenities: [
-      'Wi-Fi',
-      'Кондиционер',
-      'Кухня',
-      'Посудомоечная машина',
-      'Стиральная машина',
-      'Парковка',
-      'Мангал',
-      'Двор',
-      'Детская кроватка',
-      'Телевизор',
-    ],
-    lat: 44.6531,
-    lng: 37.9394,
-  },
-  {
-    slug: 'divnomorskoe-u-morya',
-    title: 'Дивноморское, сто метров до моря',
-    district: 'Дивноморское',
-    address: 'ул. Кирова, 19',
-    short_description: 'Однокомнатная квартира с террасой в посёлке с самым чистым морем в округе.',
-    description:
-      'Дивноморское выбирают за прозрачную воду и сосновый воздух — в самом Геленджике такого нет. ' +
-      'Квартира на первом этаже с отдельным входом и террасой под навесом, где помещается стол ' +
-      'и три кресла. Внутри двуспальная кровать и раскладное кресло для ребёнка. До пляжа сто метров, ' +
-      'до автостанции пять минут. Летом хозяева оставляют в прихожей пляжные зонты и надувной матрас.',
-    rooms: 1,
-    max_guests: 3,
-    beds: 2,
-    area: 38,
-    floor: '1 из 3, отдельный вход',
-    distance_to_sea: 2,
-    base_price: 4400,
+    area: 42,
+    floor: '2 этаж',
+    separate_entrance: 0,
+    base_price: 4600,
     cleaning_fee: 1200,
     min_nights: 3,
-    rating: 4.7,
-    reviews_count: 148,
-    amenities: ['Wi-Fi', 'Кондиционер', 'Кухня', 'Стиральная машина', 'Терраса', 'Парковка', 'Первая линия'],
-    lat: 44.4971,
-    lng: 38.1332,
-  },
-  {
-    slug: 'loft-tonkiy-mys',
-    title: 'Лофт на Тонком мысе',
-    district: 'Тонкий мыс',
-    address: 'ул. Луначарского, 128',
-    short_description: 'Просторный лофт с кирпичной стеной, проектором и рабочим местом.',
-    description:
-      'Студия-лофт 60 м² в доме у Толстого мыса: высокие потолки, кирпичная кладка, мягкий свет ' +
-      'и проектор с экраном во всю стену. Есть полноценное рабочее место с монитором — удобно, если ' +
-      'совмещаете отдых с удалёнкой. Кухонный остров, кофемашина, винный шкаф. До пляжа ' +
-      '«Сосновка» семь минут пешком через парк, до аэропорта пятнадцать минут на машине.',
-    rooms: 1,
-    max_guests: 4,
-    beds: 2,
-    area: 60,
-    floor: '4 из 5, есть лифт',
-    distance_to_sea: 7,
-    base_price: 5700,
-    cleaning_fee: 1600,
-    min_nights: 2,
-    rating: 4.8,
-    reviews_count: 73,
+    rating: 4.9,
+    reviews_count: 118,
     amenities: [
-      'Wi-Fi',
+      'Вид на море',
+      'Балкон',
       'Кондиционер',
-      'Кухня',
-      'Посудомоечная машина',
+      'Полноценная кухня',
       'Стиральная машина',
-      'Рабочее место',
-      'Парковка',
-      'Лифт',
+      'Свой санузел',
       'Телевизор',
+      'Wi-Fi',
     ],
-    lat: 44.5798,
-    lng: 38.0182,
   },
   {
-    slug: 'semeynye-apartamenty-marina-roshcha',
-    title: 'Семейные апартаменты в Марьиной Роще',
-    district: 'Марьина Роща',
-    address: 'ул. Крымская, 22',
-    short_description: 'Три спальни, детская площадка во дворе и бассейн — под большую семью.',
+    slug: 'apartamenty-kipari',
+    title: 'Двухкомнатные «Кипарис»',
+    kind: 'Апартаменты с двумя спальнями',
+    short_description: 'Две изолированные спальни — можно ехать двумя парами или семьёй с детьми.',
     description:
-      'Квартира в жилом комплексе с закрытым двором, детской площадкой и подогреваемым бассейном. ' +
-      'Три спальни: две с двуспальными кроватями, третья с двумя односпальными — можно разместить ' +
-      'шестерых без диванов. В квартире детская посуда, горшок, ворота безопасности на кухню. ' +
-      'До моря пятнадцать минут пешком по бульвару или пять минут на машине; парковочное место ' +
-      'закреплено за квартирой.',
+      'Самые просторные апартаменты второго этажа: две спальни с дверями, поэтому дети ложатся ' +
+      'спать, а взрослые ещё сидят в гостиной. В первой спальне двуспальная кровать, во второй — ' +
+      'две односпальные, которые по просьбе сдвигаем. Кухня-гостиная с обеденным столом ' +
+      'на шестерых, посудомоечная машина. Санузел один, но с раздельной душевой и большой раковиной, ' +
+      'так что утренняя очередь движется быстро.',
     rooms: 3,
-    max_guests: 6,
-    beds: 4,
-    area: 82,
-    floor: '5 из 9, два лифта',
-    distance_to_sea: 15,
-    base_price: 6300,
-    cleaning_fee: 2000,
+    max_guests: 5,
+    beds: 3,
+    area: 56,
+    floor: '2 этаж',
+    separate_entrance: 0,
+    base_price: 5800,
+    cleaning_fee: 1600,
     min_nights: 3,
     rating: 4.8,
-    reviews_count: 112,
+    reviews_count: 87,
     amenities: [
-      'Wi-Fi',
+      'Две спальни',
       'Кондиционер',
-      'Кухня',
+      'Полноценная кухня',
       'Посудомоечная машина',
       'Стиральная машина',
-      'Парковка',
-      'Бассейн',
-      'Детская кроватка',
-      'Лифт',
+      'Свой санузел',
+      'Балкон',
       'Телевизор',
+      'Wi-Fi',
+      'Детская кроватка',
     ],
-    lat: 44.5895,
-    lng: 38.0413,
+  },
+  {
+    slug: 'mansarda-magnoliya',
+    title: 'Мансарда «Магнолия»',
+    kind: 'Мансардные апартаменты',
+    short_description: 'Весь третий этаж под наклонной крышей — тихо, светло и никого над головой.',
+    description:
+      'Мансарда занимает третий этаж целиком: скошенные потолки, окна в крыше и много света. ' +
+      'Спальная зона отделена от гостиной перегородкой, дополнительно раскладывается диван, ' +
+      'поэтому вчетвером здесь свободно. Над головой соседей нет, поэтому это самые тихие ' +
+      'апартаменты в доме. Летом под крышей теплее, чем на нижних этажах, — работают два ' +
+      'кондиционера. Лестница крутая, с малышом на руках подниматься неудобно, зато вид на горы ' +
+      'из окна того стоит.',
+    rooms: 2,
+    max_guests: 4,
+    beds: 3,
+    area: 48,
+    floor: '3 этаж, мансарда',
+    separate_entrance: 0,
+    base_price: 5200,
+    cleaning_fee: 1400,
+    min_nights: 3,
+    rating: 4.7,
+    reviews_count: 63,
+    amenities: [
+      'Два кондиционера',
+      'Полноценная кухня',
+      'Стиральная машина',
+      'Свой санузел',
+      'Рабочее место',
+      'Телевизор',
+      'Wi-Fi',
+      'Вид на горы',
+    ],
   },
 ] as const;
 
-/** Демо-брони, чтобы календарь занятости не был пустым при первом запуске. */
+/** Демо-занятость, чтобы календарь при первом запуске не выглядел пустым. */
 const DEMO_BUSY: { slug: string; startsInDays: number; nights: number }[] = [
-  { slug: 'morskoy-briz-centr', startsInDays: 6, nights: 5 },
-  { slug: 'morskoy-briz-centr', startsInDays: 24, nights: 4 },
-  { slug: 'panorama-tolstyy-mys', startsInDays: 3, nights: 7 },
-  { slug: 'studiya-u-naberezhnoy', startsInDays: 12, nights: 3 },
-  { slug: 'golubaya-buhta-apartamenty', startsInDays: 9, nights: 6 },
-  { slug: 'dom-s-dvorikom-kabardinka', startsInDays: 18, nights: 8 },
-  { slug: 'loft-tonkiy-mys', startsInDays: 5, nights: 4 },
+  { slug: 'studiya-briz', startsInDays: 6, nights: 5 },
+  { slug: 'apartamenty-panorama', startsInDays: 3, nights: 7 },
+  { slug: 'apartamenty-laguna', startsInDays: 12, nights: 4 },
+  { slug: 'apartamenty-kipari', startsInDays: 18, nights: 6 },
 ];
 
 export function seed(): void {
-  const insertProperty = db.prepare(`
-    INSERT INTO properties (
-      slug, title, district, address, short_description, description, rooms, max_guests,
-      beds, area, floor, distance_to_sea, base_price, cleaning_fee, min_nights,
-      rating, reviews_count, amenities, images, lat, lng
+  const insert = db.prepare(`
+    INSERT INTO apartments (
+      slug, title, kind, short_description, description, rooms, max_guests, beds, area, floor,
+      separate_entrance, base_price, cleaning_fee, min_nights, rating, reviews_count,
+      amenities, images, sort_order
     ) VALUES (
-      @slug, @title, @district, @address, @short_description, @description, @rooms, @max_guests,
-      @beds, @area, @floor, @distance_to_sea, @base_price, @cleaning_fee, @min_nights,
-      @rating, @reviews_count, @amenities, @images, @lat, @lng
+      @slug, @title, @kind, @short_description, @description, @rooms, @max_guests, @beds, @area, @floor,
+      @separate_entrance, @base_price, @cleaning_fee, @min_nights, @rating, @reviews_count,
+      @amenities, @images, @sort_order
     )
     ON CONFLICT(slug) DO UPDATE SET
       title = excluded.title,
-      district = excluded.district,
-      address = excluded.address,
+      kind = excluded.kind,
       short_description = excluded.short_description,
       description = excluded.description,
       rooms = excluded.rooms,
@@ -316,41 +206,43 @@ export function seed(): void {
       beds = excluded.beds,
       area = excluded.area,
       floor = excluded.floor,
-      distance_to_sea = excluded.distance_to_sea,
+      separate_entrance = excluded.separate_entrance,
       base_price = excluded.base_price,
       cleaning_fee = excluded.cleaning_fee,
       min_nights = excluded.min_nights,
       rating = excluded.rating,
       reviews_count = excluded.reviews_count,
       amenities = excluded.amenities,
-      images = excluded.images
+      images = excluded.images,
+      sort_order = excluded.sort_order
   `);
 
   const insertBlocked = db.prepare(
-    `INSERT OR IGNORE INTO blocked_dates (property_id, date, reason) VALUES (?, ?, ?)`,
+    `INSERT OR IGNORE INTO blocked_dates (apartment_id, date, reason) VALUES (?, ?, ?)`,
   );
-  const propertyIdBySlug = db.prepare(`SELECT id FROM properties WHERE slug = ?`);
+  const idBySlug = db.prepare(`SELECT id FROM apartments WHERE slug = ?`);
 
   db.transaction(() => {
-    for (const property of PROPERTIES) {
-      insertProperty.run({
-        ...property,
-        amenities: JSON.stringify(property.amenities),
+    APARTMENTS.forEach((apartment, index) => {
+      insert.run({
+        ...apartment,
+        sort_order: index,
+        amenities: JSON.stringify(apartment.amenities),
         images: JSON.stringify([
-          `/images/${property.slug}-1.svg`,
-          `/images/${property.slug}-2.svg`,
-          `/images/${property.slug}-3.svg`,
-          `/images/${property.slug}-4.svg`,
+          `/images/${apartment.slug}-1.svg`,
+          `/images/${apartment.slug}-2.svg`,
+          `/images/${apartment.slug}-3.svg`,
+          `/images/${apartment.slug}-4.svg`,
         ]),
       });
-    }
+    });
 
-    const hasBlocked = db.prepare(`SELECT COUNT(*) AS count FROM blocked_dates`).get() as {
+    const blocked = db.prepare(`SELECT COUNT(*) AS count FROM blocked_dates`).get() as {
       count: number;
     };
-    if (hasBlocked.count === 0) {
+    if (blocked.count === 0) {
       for (const busy of DEMO_BUSY) {
-        const row = propertyIdBySlug.get(busy.slug) as { id: number } | undefined;
+        const row = idBySlug.get(busy.slug) as { id: number } | undefined;
         if (!row) continue;
         for (let i = 0; i < busy.nights; i += 1) {
           insertBlocked.run(row.id, addDays(today(), busy.startsInDays + i), 'Бронь по телефону');
@@ -360,9 +252,9 @@ export function seed(): void {
   })();
 }
 
-// Позволяет запускать сидирование отдельной командой: npm run seed
+// Отдельный запуск сидирования: npm run seed
 if (process.argv[1]?.endsWith('seed.ts') || process.argv[1]?.endsWith('seed.js')) {
   seed();
-  const { count } = db.prepare(`SELECT COUNT(*) AS count FROM properties`).get() as { count: number };
-  console.log(`Каталог заполнен: ${count} объектов.`);
+  const { count } = db.prepare(`SELECT COUNT(*) AS count FROM apartments`).get() as { count: number };
+  console.log(`Апартаменты загружены: ${count}.`);
 }

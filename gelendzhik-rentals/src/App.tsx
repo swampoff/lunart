@@ -1,12 +1,13 @@
 import { useEffect } from 'react';
 import { BrowserRouter, Link, Route, Routes, useLocation } from 'react-router-dom';
 import { Layout } from '@/components/Layout';
+import { ApartmentPage } from '@/pages/ApartmentPage';
+import { ApartmentsPage } from '@/pages/ApartmentsPage';
 import { BookingPage } from '@/pages/BookingPage';
-import { CatalogPage } from '@/pages/CatalogPage';
 import { CheckoutPage } from '@/pages/CheckoutPage';
 import { HomePage } from '@/pages/HomePage';
+import { HousePage } from '@/pages/HousePage';
 import { PayPage } from '@/pages/PayPage';
-import { PropertyPage } from '@/pages/PropertyPage';
 
 /** При переходе между страницами возвращаем прокрутку наверх. */
 function ScrollToTop() {
@@ -22,12 +23,12 @@ function NotFoundPage() {
     <div className="mx-auto max-w-md px-4 py-24 text-center">
       <p className="text-5xl font-extrabold text-sea-900">404</p>
       <h1 className="mt-4 text-2xl font-extrabold">Страница не найдена</h1>
-      <p className="mt-2 text-ink-soft">Возможно, объект снят с публикации или ссылка устарела.</p>
+      <p className="mt-2 text-ink-soft">Возможно, ссылка устарела или в адресе опечатка.</p>
       <Link
-        to="/catalog"
+        to="/apartments"
         className="mt-6 inline-block rounded-xl bg-sea-900 px-6 py-3 font-semibold text-white transition hover:bg-sea-700"
       >
-        Смотреть квартиры
+        Смотреть апартаменты
       </Link>
     </div>
   );
@@ -40,8 +41,9 @@ export function App() {
       <Layout>
         <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/catalog" element={<CatalogPage />} />
-          <Route path="/apartment/:slug" element={<PropertyPage />} />
+          <Route path="/apartments" element={<ApartmentsPage />} />
+          <Route path="/apartment/:slug" element={<ApartmentPage />} />
+          <Route path="/house" element={<HousePage />} />
           <Route path="/checkout/:slug" element={<CheckoutPage />} />
           <Route path="/pay/:paymentId" element={<PayPage />} />
           <Route path="/booking" element={<BookingPage />} />

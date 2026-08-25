@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { DateRangePicker } from '@/components/DateRangePicker';
 import { searchToQuery } from '@/lib/api';
 import { formatRange } from '@/lib/dates';
+import { useHouse } from '@/lib/useHouse';
 
 interface Props {
   initial?: { checkIn?: string; checkOut?: string; guests?: number };
@@ -12,13 +13,14 @@ interface Props {
 
 export function SearchForm({ initial, variant = 'hero' }: Props) {
   const navigate = useNavigate();
+  const house = useHouse();
   const [checkIn, setCheckIn] = useState<string | null>(initial?.checkIn ?? null);
   const [checkOut, setCheckOut] = useState<string | null>(initial?.checkOut ?? null);
   const [guests, setGuests] = useState(initial?.guests ?? 2);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Календарь закрывается по клику вне блока — иначе он перекрывает список объектов.
+  // Календарь закрывается по клику вне блока — иначе он перекрывает список апартаментов.
   useEffect(() => {
     if (!calendarOpen) return;
     function handleClick(event: MouseEvent) {
@@ -28,9 +30,12 @@ export function SearchForm({ initial, variant = 'hero' }: Props) {
     return () => document.removeEventListener('mousedown', handleClick);
   }, [calendarOpen]);
 
+  // Больше, чем вмещают самые большие апартаменты, выбрать нельзя.
+  const maxGuests = house?.maxGuests ?? 6;
+
   function submit() {
     navigate(
-      `/catalog?${searchToQuery({
+      `/apartments?${searchToQuery({
         checkIn: checkIn ?? undefined,
         checkOut: checkOut ?? undefined,
         guests,
@@ -74,9 +79,9 @@ export function SearchForm({ initial, variant = 'hero' }: Props) {
               onChange={(event) => setGuests(Number(event.target.value))}
               className="w-full cursor-pointer bg-transparent font-semibold outline-none"
             >
-              {[1, 2, 3, 4, 5, 6].map((count) => (
+              {Array.from({ length: maxGuests }, (_, i) => i + 1).map((count) => (
                 <option key={count} value={count}>
-                  {count === 6 ? '6 и больше' : count}
+                  {count}
                 </option>
               ))}
             </select>

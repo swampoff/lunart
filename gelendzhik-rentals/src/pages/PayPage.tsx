@@ -83,7 +83,7 @@ export function PayPage() {
           <p className="text-sm text-ink-soft">Предоплата брони {booking.id}</p>
           <p className="mt-1 text-2xl font-extrabold">{formatMoney(amount)}</p>
           <p className="mt-1 text-sm text-ink-soft">
-            {booking.propertyTitle} · {formatRange(booking.checkIn, booking.checkOut)}
+            {booking.apartmentTitle} · {formatRange(booking.checkIn, booking.checkOut)}
           </p>
         </div>
 

@@ -1,7 +1,7 @@
 import { ArrowLeft, Loader2, Lock } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import type { Property, Quote } from '@shared/types';
+import type { Apartment, Quote } from '@shared/types';
 import { PriceBreakdown } from '@/components/PriceBreakdown';
 import { ApiError, api } from '@/lib/api';
 import { formatRange, guestsLabel, nightsLabel } from '@/lib/dates';
@@ -25,7 +25,7 @@ export function CheckoutPage() {
   const checkOut = searchParams.get('checkOut') ?? '';
   const guests = Number(searchParams.get('guests') ?? 2);
 
-  const [property, setProperty] = useState<Property | null>(null);
+  const [apartment, setApartment] = useState<Apartment | null>(null);
   const [quote, setQuote] = useState<Quote | null>(null);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [error, setError] = useState<string | null>(null);
@@ -37,14 +37,14 @@ export function CheckoutPage() {
       return;
     }
 
-    api.property(slug).then(setProperty).catch(() => setError('Объект не найден'));
+    api.apartment(slug).then(setApartment).catch(() => setError('Апартаменты не найдены'));
 
     api
-      .quote({ propertySlug: slug, checkIn, checkOut, guests })
+      .quote({ apartmentSlug: slug, checkIn, checkOut, guests })
       .then((result) => {
         setQuote(result.quote);
         if (!result.available) {
-          setError('Эти даты уже заняты. Выберите другие в календаре объекта.');
+          setError('Эти даты уже заняты. Выберите другие в календаре апартаментов.');
         }
       })
       .catch((cause: unknown) => {
@@ -59,7 +59,7 @@ export function CheckoutPage() {
 
     try {
       const booking = await api.createBooking({
-        stay: { propertySlug: slug, checkIn, checkOut, guests },
+        stay: { apartmentSlug: slug, checkIn, checkOut, guests },
         guest: {
           name: form.name.trim(),
           phone: form.phone.trim(),
@@ -91,14 +91,14 @@ export function CheckoutPage() {
     return (
       <div className="mx-auto max-w-3xl px-4 py-20 text-center">
         <h1 className="text-2xl font-extrabold">{error}</h1>
-        <Link to="/catalog" className="mt-6 inline-block font-semibold text-sea-700 underline">
-          Подобрать другую квартиру
+        <Link to="/apartments" className="mt-6 inline-block font-semibold text-sea-700 underline">
+          Выбрать другие апартаменты
         </Link>
       </div>
     );
   }
 
-  if (!property || !quote) {
+  if (!apartment || !quote) {
     return (
       <div className="flex justify-center py-32 text-ink-soft">
         <Loader2 className="size-8 animate-spin" />
@@ -119,7 +119,7 @@ export function CheckoutPage() {
         className="inline-flex items-center gap-2 text-sm font-semibold text-ink-soft transition hover:text-sea-900"
       >
         <ArrowLeft className="size-4" />
-        Назад к квартире
+        Назад к апартаментам
       </Link>
 
       <h1 className="mt-4 text-3xl font-extrabold">Оформление брони</h1>
@@ -202,13 +202,13 @@ export function CheckoutPage() {
           <div className="rounded-[1.25rem] bg-white p-6 shadow-sm ring-1 ring-sea-950/5">
             <div className="flex gap-4">
               <img
-                src={property.images[0]}
+                src={apartment.images[0]}
                 alt=""
                 className="size-20 shrink-0 rounded-xl object-cover"
               />
               <div>
-                <p className="font-bold leading-snug">{property.title}</p>
-                <p className="mt-1 text-sm text-ink-soft">{property.district}</p>
+                <p className="font-bold leading-snug">{apartment.title}</p>
+                <p className="mt-1 text-sm text-ink-soft">{apartment.kind}</p>
               </div>
             </div>
 

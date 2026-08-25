@@ -67,7 +67,7 @@ export function today(): string {
 }
 
 export interface QuoteInput {
-  propertyId: number;
+  apartmentId: number;
   basePrice: number;
   cleaningFee: number;
   checkIn: string;
@@ -95,7 +95,7 @@ export function buildQuote(input: QuoteInput): Quote {
   const prepayment = Math.round((total * PREPAYMENT_PERCENT) / 100);
 
   return {
-    propertyId: input.propertyId,
+    apartmentId: input.apartmentId,
     checkIn: input.checkIn,
     checkOut: input.checkOut,
     guests: input.guests,

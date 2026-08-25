@@ -1,29 +1,29 @@
 import { AlertCircle, Loader2, ShieldCheck, Star } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { PropertyWithAvailability, Quote } from '@shared/types';
+import type { ApartmentWithAvailability, Quote } from '@shared/types';
 import { DateRangePicker } from '@/components/DateRangePicker';
 import { PriceBreakdown } from '@/components/PriceBreakdown';
 import { ApiError, api, formatMoney, searchToQuery } from '@/lib/api';
 import { nightsBetween } from '@/lib/dates';
 
 interface Props {
-  property: PropertyWithAvailability;
+  apartment: ApartmentWithAvailability;
   initial: { checkIn: string | null; checkOut: string | null; guests: number };
 }
 
-export function BookingWidget({ property, initial }: Props) {
+export function BookingWidget({ apartment, initial }: Props) {
   const navigate = useNavigate();
   const [checkIn, setCheckIn] = useState(initial.checkIn);
   const [checkOut, setCheckOut] = useState(initial.checkOut);
-  const [guests, setGuests] = useState(Math.min(initial.guests, property.maxGuests));
+  const [guests, setGuests] = useState(Math.min(initial.guests, apartment.maxGuests));
   const [quote, setQuote] = useState<Quote | null>(null);
   const [available, setAvailable] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const nights = checkIn && checkOut ? nightsBetween(checkIn, checkOut) : 0;
-  const tooShort = nights > 0 && nights < property.minNights;
+  const tooShort = nights > 0 && nights < apartment.minNights;
 
   useEffect(() => {
     if (!checkIn || !checkOut || tooShort) {
@@ -36,7 +36,7 @@ export function BookingWidget({ property, initial }: Props) {
     setLoading(true);
 
     api
-      .quote({ propertySlug: property.slug, checkIn, checkOut, guests })
+      .quote({ apartmentSlug: apartment.slug, checkIn, checkOut, guests })
       .then((result) => {
         if (cancelled) return;
         setQuote(result.quote);
@@ -55,11 +55,11 @@ export function BookingWidget({ property, initial }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [property.slug, checkIn, checkOut, guests, tooShort]);
+  }, [apartment.slug, checkIn, checkOut, guests, tooShort]);
 
   function goToCheckout() {
     if (!checkIn || !checkOut) return;
-    navigate(`/checkout/${property.slug}?${searchToQuery({ checkIn, checkOut, guests })}`);
+    navigate(`/checkout/${apartment.slug}?${searchToQuery({ checkIn, checkOut, guests })}`);
   }
 
   const canBook = Boolean(quote && available && !loading && !tooShort);
@@ -68,13 +68,13 @@ export function BookingWidget({ property, initial }: Props) {
     <div className="rounded-[1.25rem] bg-white p-6 shadow-lg shadow-sea-950/10 ring-1 ring-sea-950/5">
       <div className="flex items-baseline justify-between">
         <p className="text-2xl font-extrabold">
-          {formatMoney(property.basePrice)}
+          {formatMoney(apartment.basePrice)}
           <span className="text-base font-medium text-ink-soft"> / ночь</span>
         </p>
         <span className="flex items-center gap-1 text-sm font-semibold">
           <Star className="size-4 fill-sun text-sun" />
-          {property.rating.toFixed(1)}
-          <span className="font-normal text-ink-soft">({property.reviewsCount})</span>
+          {apartment.rating.toFixed(1)}
+          <span className="font-normal text-ink-soft">({apartment.reviewsCount})</span>
         </span>
       </div>
       <p className="mt-1 text-xs text-ink-soft">Цена базовая: в июле–августе выше, зимой ниже</p>
@@ -83,8 +83,8 @@ export function BookingWidget({ property, initial }: Props) {
         <DateRangePicker
           checkIn={checkIn}
           checkOut={checkOut}
-          busyDates={property.busyDates}
-          minNights={property.minNights}
+          busyDates={apartment.busyDates}
+          minNights={apartment.minNights}
           monthsToShow={1}
           onChange={(from, to) => {
             setCheckIn(from);
@@ -100,7 +100,7 @@ export function BookingWidget({ property, initial }: Props) {
           onChange={(event) => setGuests(Number(event.target.value))}
           className="mt-1 w-full cursor-pointer rounded-xl border border-sand-dark bg-white px-4 py-3 font-semibold outline-none focus:border-sea-500"
         >
-          {Array.from({ length: property.maxGuests }, (_, i) => i + 1).map((count) => (
+          {Array.from({ length: apartment.maxGuests }, (_, i) => i + 1).map((count) => (
             <option key={count} value={count}>
               {count}
             </option>
@@ -110,13 +110,13 @@ export function BookingWidget({ property, initial }: Props) {
 
       {tooShort && (
         <Notice tone="warning">
-          Минимальный срок проживания — {property.minNights} ноч. Продлите даты, чтобы забронировать.
+          Минимальный срок проживания — {apartment.minNights} ноч. Продлите даты, чтобы забронировать.
         </Notice>
       )}
 
       {!available && !tooShort && quote && (
         <Notice tone="warning">
-          На эти даты квартира уже занята. Выберите другие — занятые дни зачёркнуты в календаре.
+          На эти даты апартаменты уже заняты. Выберите другие — занятые дни зачёркнуты в календаре.
         </Notice>
       )}
 

@@ -81,7 +81,7 @@ paymentsRouter.post('/payments', async (req, res, next) => {
       paymentId,
       bookingId: booking.id,
       amount: booking.prepayment,
-      description: `Предоплата брони ${booking.id}: ${booking.propertyTitle}, ${booking.checkIn} — ${booking.checkOut}`,
+      description: `Предоплата брони ${booking.id}: ${booking.apartmentTitle}, ${booking.checkIn} — ${booking.checkOut}`,
       returnUrl: publicUrl(`/booking/${booking.id}`),
       idempotenceKey,
       customerEmail: booking.guest.email,

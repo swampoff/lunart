@@ -1,8 +1,9 @@
 import type {
+  Apartment,
+  ApartmentWithAvailability,
   Booking,
+  House,
   PaymentInfo,
-  Property,
-  PropertyWithAvailability,
   Quote,
   SearchParams,
 } from '@shared/types';
@@ -32,8 +33,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const payload = await response.json().catch(() => null);
 
   if (!response.ok) {
-    const message =
-      (payload as { message?: string } | null)?.message ?? 'Не удалось выполнить запрос';
+    const message = (payload as { message?: string } | null)?.message ?? 'Не удалось выполнить запрос';
     const code = (payload as { error?: string } | null)?.error ?? 'unknown';
     throw new ApiError(message, code, response.status);
   }
@@ -41,23 +41,32 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return payload as T;
 }
 
-export interface CatalogItem {
-  property: Property;
+export interface HouseInfo extends House {
+  apartmentsCount: number;
+  maxGuests: number;
+  priceFrom: number;
+}
+
+export interface ApartmentListItem {
+  apartment: Apartment;
+  available: boolean;
+  unavailableReason: string | null;
   quote: Quote | null;
 }
 
-export interface CatalogResponse {
-  items: CatalogItem[];
+export interface ApartmentsResponse {
+  items: ApartmentListItem[];
   total: number;
+  availableCount: number;
   searchedWithDates: boolean;
 }
 
 export interface FiltersResponse {
-  districts: string[];
   amenities: string[];
   priceMin: number;
   priceMax: number;
   maxGuests: number;
+  maxRooms: number;
 }
 
 export function searchToQuery(params: SearchParams): string {
@@ -65,8 +74,7 @@ export function searchToQuery(params: SearchParams): string {
   if (params.checkIn) query.set('checkIn', params.checkIn);
   if (params.checkOut) query.set('checkOut', params.checkOut);
   if (params.guests) query.set('guests', String(params.guests));
-  if (params.district) query.set('district', params.district);
-  if (params.priceMin !== undefined) query.set('priceMin', String(params.priceMin));
+  if (params.rooms) query.set('rooms', String(params.rooms));
   if (params.priceMax !== undefined) query.set('priceMax', String(params.priceMax));
   if (params.amenities?.length) query.set('amenities', params.amenities.join(','));
   if (params.sort) query.set('sort', params.sort);
@@ -74,21 +82,23 @@ export function searchToQuery(params: SearchParams): string {
 }
 
 export const api = {
-  properties: (params: SearchParams) =>
-    request<CatalogResponse>(`/properties?${searchToQuery(params)}`),
+  house: () => request<HouseInfo>('/house'),
 
-  property: (slug: string) => request<PropertyWithAvailability>(`/properties/${slug}`),
+  apartments: (params: SearchParams) =>
+    request<ApartmentsResponse>(`/apartments?${searchToQuery(params)}`),
+
+  apartment: (slug: string) => request<ApartmentWithAvailability>(`/apartments/${slug}`),
 
   filters: () => request<FiltersResponse>('/filters'),
 
-  quote: (body: { propertySlug: string; checkIn: string; checkOut: string; guests: number }) =>
+  quote: (body: { apartmentSlug: string; checkIn: string; checkOut: string; guests: number }) =>
     request<{ available: boolean; quote: Quote }>('/quote', {
       method: 'POST',
       body: JSON.stringify(body),
     }),
 
   createBooking: (body: {
-    stay: { propertySlug: string; checkIn: string; checkOut: string; guests: number };
+    stay: { apartmentSlug: string; checkIn: string; checkOut: string; guests: number };
     guest: { name: string; phone: string; email: string; comment?: string };
   }) => request<Booking>('/bookings', { method: 'POST', body: JSON.stringify(body) }),
 

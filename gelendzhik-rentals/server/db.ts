@@ -1,7 +1,7 @@
 import Database from 'better-sqlite3';
 import { existsSync, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
-import type { Property } from '../shared/types.js';
+import type { Apartment } from '../shared/types.js';
 
 const DB_PATH = process.env.DATABASE_PATH
   ? resolve(process.env.DATABASE_PATH)
@@ -17,12 +17,11 @@ db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
 
 db.exec(`
-  CREATE TABLE IF NOT EXISTS properties (
+  CREATE TABLE IF NOT EXISTS apartments (
     id                INTEGER PRIMARY KEY,
     slug              TEXT NOT NULL UNIQUE,
     title             TEXT NOT NULL,
-    district          TEXT NOT NULL,
-    address           TEXT NOT NULL,
+    kind              TEXT NOT NULL,
     short_description TEXT NOT NULL,
     description       TEXT NOT NULL,
     rooms             INTEGER NOT NULL,
@@ -30,7 +29,7 @@ db.exec(`
     beds              INTEGER NOT NULL,
     area              REAL NOT NULL,
     floor             TEXT NOT NULL,
-    distance_to_sea   INTEGER NOT NULL,
+    separate_entrance INTEGER NOT NULL DEFAULT 0,
     base_price        INTEGER NOT NULL,
     cleaning_fee      INTEGER NOT NULL,
     min_nights        INTEGER NOT NULL DEFAULT 2,
@@ -38,13 +37,12 @@ db.exec(`
     reviews_count     INTEGER NOT NULL,
     amenities         TEXT NOT NULL,
     images            TEXT NOT NULL,
-    lat               REAL NOT NULL,
-    lng               REAL NOT NULL
+    sort_order        INTEGER NOT NULL DEFAULT 0
   );
 
   CREATE TABLE IF NOT EXISTS bookings (
     id               TEXT PRIMARY KEY,
-    property_id      INTEGER NOT NULL REFERENCES properties(id),
+    apartment_id     INTEGER NOT NULL REFERENCES apartments(id),
     check_in         TEXT NOT NULL,
     check_out        TEXT NOT NULL,
     guests           INTEGER NOT NULL,
@@ -61,8 +59,8 @@ db.exec(`
     CHECK (check_out > check_in)
   );
 
-  CREATE INDEX IF NOT EXISTS idx_bookings_property_dates
-    ON bookings (property_id, check_in, check_out);
+  CREATE INDEX IF NOT EXISTS idx_bookings_apartment_dates
+    ON bookings (apartment_id, check_in, check_out);
 
   CREATE TABLE IF NOT EXISTS payments (
     id               TEXT PRIMARY KEY,
@@ -80,19 +78,18 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_payments_booking ON payments (booking_id);
 
   CREATE TABLE IF NOT EXISTS blocked_dates (
-    property_id INTEGER NOT NULL REFERENCES properties(id),
-    date        TEXT NOT NULL,
-    reason      TEXT,
-    PRIMARY KEY (property_id, date)
+    apartment_id INTEGER NOT NULL REFERENCES apartments(id),
+    date         TEXT NOT NULL,
+    reason       TEXT,
+    PRIMARY KEY (apartment_id, date)
   );
 `);
 
-export interface PropertyRow {
+export interface ApartmentRow {
   id: number;
   slug: string;
   title: string;
-  district: string;
-  address: string;
+  kind: string;
   short_description: string;
   description: string;
   rooms: number;
@@ -100,7 +97,7 @@ export interface PropertyRow {
   beds: number;
   area: number;
   floor: string;
-  distance_to_sea: number;
+  separate_entrance: number;
   base_price: number;
   cleaning_fee: number;
   min_nights: number;
@@ -108,17 +105,15 @@ export interface PropertyRow {
   reviews_count: number;
   amenities: string;
   images: string;
-  lat: number;
-  lng: number;
+  sort_order: number;
 }
 
-export function rowToProperty(row: PropertyRow): Property {
+export function rowToApartment(row: ApartmentRow): Apartment {
   return {
     id: row.id,
     slug: row.slug,
     title: row.title,
-    district: row.district as Property['district'],
-    address: row.address,
+    kind: row.kind,
     shortDescription: row.short_description,
     description: row.description,
     rooms: row.rooms,
@@ -126,7 +121,7 @@ export function rowToProperty(row: PropertyRow): Property {
     beds: row.beds,
     area: row.area,
     floor: row.floor,
-    distanceToSea: row.distance_to_sea,
+    separateEntrance: row.separate_entrance === 1,
     basePrice: row.base_price,
     cleaningFee: row.cleaning_fee,
     minNights: row.min_nights,
@@ -134,14 +129,12 @@ export function rowToProperty(row: PropertyRow): Property {
     reviewsCount: row.reviews_count,
     amenities: JSON.parse(row.amenities),
     images: JSON.parse(row.images),
-    lat: row.lat,
-    lng: row.lng,
   };
 }
 
 export interface BookingRow {
   id: string;
-  property_id: number;
+  apartment_id: number;
   check_in: string;
   check_out: string;
   guests: number;

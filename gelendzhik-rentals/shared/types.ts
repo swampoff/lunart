@@ -1,24 +1,40 @@
 /**
  * Типы, общие для сервера и клиента.
- * Даты везде — строки в формате YYYY-MM-DD (без времени и таймзон):
- * заселение и выселение привязаны к календарному дню, а не к моменту времени.
+ *
+ * Модель предметной области: один частный дом (House), внутри которого несколько
+ * апартаментов (Apartment). Адрес, двор, бассейн и парковка принадлежат дому,
+ * а вместимость, площадь и цена — конкретным апартаментам.
+ *
+ * Даты везде — строки вида YYYY-MM-DD: заселение и выселение привязаны
+ * к календарному дню, а не к моменту времени.
  */
 
-export type District =
-  | 'Центр'
-  | 'Толстый мыс'
-  | 'Тонкий мыс'
-  | 'Голубая бухта'
-  | 'Марьина Роща'
-  | 'Кабардинка'
-  | 'Дивноморское';
+export interface House {
+  name: string;
+  tagline: string;
+  address: string;
+  area: string;
+  description: string;
+  /** Что есть на общей территории и доступно всем гостям дома. */
+  commonAmenities: string[];
+  /** Сколько минут пешком до моря. */
+  distanceToSea: number;
+  /** Ориентиры поблизости: «Центральная набережная — 15 минут на машине». */
+  nearby: { title: string; value: string }[];
+  rules: { title: string; value: string }[];
+  images: string[];
+  phone: string;
+  phoneHref: string;
+  lat: number;
+  lng: number;
+}
 
-export interface Property {
+export interface Apartment {
   id: number;
   slug: string;
   title: string;
-  district: District;
-  address: string;
+  /** Тип размещения: студия, апартаменты с одной спальней и так далее. */
+  kind: string;
   shortDescription: string;
   description: string;
   rooms: number;
@@ -26,20 +42,19 @@ export interface Property {
   beds: number;
   area: number;
   floor: string;
-  distanceToSea: number; // минут пешком
-  basePrice: number; // рублей за ночь в базовый сезон
+  /** true — есть отдельный вход со двора, без общего коридора. */
+  separateEntrance: boolean;
+  basePrice: number;
   cleaningFee: number;
   minNights: number;
   rating: number;
   reviewsCount: number;
   amenities: string[];
   images: string[];
-  lat: number;
-  lng: number;
 }
 
-export interface PropertyWithAvailability extends Property {
-  /** Занятые даты на ближайший год — для подсветки в календаре. */
+export interface ApartmentWithAvailability extends Apartment {
+  /** Занятые ночи на ближайший год — для подсветки в календаре. */
   busyDates: string[];
 }
 
@@ -47,8 +62,7 @@ export interface SearchParams {
   checkIn?: string;
   checkOut?: string;
   guests?: number;
-  district?: string;
-  priceMin?: number;
+  rooms?: number;
   priceMax?: number;
   amenities?: string[];
   sort?: 'price_asc' | 'price_desc' | 'rating' | 'popular';
@@ -63,7 +77,7 @@ export interface QuoteNight {
 export type SeasonName = 'низкий' | 'межсезонье' | 'высокий' | 'пиковый';
 
 export interface Quote {
-  propertyId: number;
+  apartmentId: number;
   checkIn: string;
   checkOut: string;
   guests: number;
@@ -81,11 +95,7 @@ export interface Quote {
   breakdown: QuoteNight[];
 }
 
-export type BookingStatus =
-  | 'awaiting_payment'
-  | 'paid'
-  | 'cancelled'
-  | 'expired';
+export type BookingStatus = 'awaiting_payment' | 'paid' | 'cancelled' | 'expired';
 
 export interface Guest {
   name: string;
@@ -96,9 +106,9 @@ export interface Guest {
 
 export interface Booking {
   id: string;
-  propertyId: number;
-  propertyTitle: string;
-  propertySlug: string;
+  apartmentId: number;
+  apartmentTitle: string;
+  apartmentSlug: string;
   checkIn: string;
   checkOut: string;
   nights: number;

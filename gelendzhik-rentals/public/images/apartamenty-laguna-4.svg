@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" width="1200" height="800" role="img">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#cfe9f1"/>
+      <stop offset="55%" stop-color="#8fc9dd"/>
+      <stop offset="100%" stop-color="#4a9cbe"/>
+    </linearGradient>
+    <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3f9bb8"/>
+      <stop offset="100%" stop-color="#1c6f8f"/>
+    </linearGradient>
+  </defs>
+  
+    <rect width="1200" height="800" fill="#f2ece3"/>
+    <rect y="600" width="1200" height="200" fill="#d8c3a5"/>
+    <ellipse cx="600" cy="700" rx="420" ry="80" fill="#bcdde6" opacity="0.6"/>
+    
+    <rect x="820" y="130" width="300" height="290" rx="8" fill="url(#sky)"/>
+    <rect x="820" y="309.8" width="300" height="110.2" fill="url(#sea)"/>
+    <circle cx="1024" cy="217" r="31.9" fill="#ffffff" opacity="0.9"/>
+    <rect x="964" y="130" width="12" height="290" fill="#ffffff"/>
+    <rect x="808" y="118" width="324" height="314" rx="12" fill="none" stroke="#e6dccd" stroke-width="12"/>
+    <rect x="120" y="420" width="520" height="140" rx="20" fill="#e8ded0"/>
+    <rect x="120" y="380" width="520" height="60" rx="18" fill="#e6dccd"/>
+    <rect x="160" y="400" width="120" height="60" rx="14" fill="#bcdde6"/>
+    <rect x="320" y="400" width="120" height="60" rx="14" fill="#ffffff"/>
+    <rect x="480" y="400" width="120" height="60" rx="14" fill="#bcdde6"/>
+    <rect x="150" y="560" width="60" height="40" fill="#7d5533"/>
+    <rect x="550" y="560" width="60" height="40" fill="#7d5533"/>
+    <rect x="290" y="600" width="220" height="20" rx="10" fill="#a9764c"/>
+    <rect x="310" y="620" width="14" height="50" fill="#7d5533"/>
+    <rect x="476" y="620" width="14" height="50" fill="#7d5533"/>
+    <rect x="700" y="250" width="300" height="180" rx="10" fill="#2b2b2b" opacity="0.85"/>
+    <rect x="820" y="430" width="60" height="14" fill="#2b2b2b" opacity="0.85"/>
+    <ellipse cx="1084" cy="540" rx="60" ry="76" fill="#3d8557" opacity="0.85"/>
+    <rect x="1062" y="600" width="46" height="60" rx="6" fill="#a9764c"/>
+</svg>

@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { customAlphabet } from 'nanoid';
 import { z } from 'zod';
 import { HOLD_MINUTES, isRangeAvailable } from '../availability.js';
-import { db, rowToProperty, type PropertyRow } from '../db.js';
+import { db, rowToApartment, type ApartmentRow } from '../db.js';
 import { buildQuote, nightsBetween, today } from '../pricing.js';
 import { loadBooking } from '../serialize.js';
 import { dateSchema, validationError } from './validation.js';
@@ -14,7 +14,7 @@ const bookingCode = customAlphabet('ABCDEFGHJKLMNPQRSTUVWXYZ23456789', 6);
 
 const staySchema = z
   .object({
-    propertySlug: z.string().min(1),
+    apartmentSlug: z.string().min(1),
     checkIn: dateSchema,
     checkOut: dateSchema,
     guests: z.coerce.number().int().min(1).max(20),
@@ -44,65 +44,66 @@ const createBookingSchema = z.object({
 });
 
 interface StayContext {
-  property: ReturnType<typeof rowToProperty>;
+  apartment: ReturnType<typeof rowToApartment>;
   error?: { status: number; body: { error: string; message: string } };
 }
 
 function resolveStay(slug: string, checkIn: string, checkOut: string, guests: number): StayContext | null {
-  const row = db.prepare(`SELECT * FROM properties WHERE slug = ?`).get(slug) as PropertyRow | undefined;
+  const row = db.prepare(`SELECT * FROM apartments WHERE slug = ?`).get(slug) as
+    | ApartmentRow
+    | undefined;
   if (!row) return null;
 
-  const property = rowToProperty(row);
+  const apartment = rowToApartment(row);
   const nights = nightsBetween(checkIn, checkOut);
 
-  if (guests > property.maxGuests) {
+  if (guests > apartment.maxGuests) {
     return {
-      property,
+      apartment,
       error: {
         status: 400,
         body: {
           error: 'too_many_guests',
-          message: `В этой квартире можно разместить не больше ${property.maxGuests} гостей`,
+          message: `В этих апартаментах можно разместить не больше ${apartment.maxGuests} гостей`,
         },
       },
     };
   }
 
-  if (nights < property.minNights) {
+  if (nights < apartment.minNights) {
     return {
-      property,
+      apartment,
       error: {
         status: 400,
         body: {
           error: 'min_nights',
-          message: `Минимальный срок проживания — ${property.minNights} ноч. Выберите даты подлиннее.`,
+          message: `Минимальный срок проживания — ${apartment.minNights} ноч. Выберите даты подлиннее.`,
         },
       },
     };
   }
 
-  return { property };
+  return { apartment };
 }
 
 /** Предварительный расчёт: сколько стоит проживание и свободны ли даты. */
 bookingsRouter.post('/quote', (req, res) => {
   const parsed = staySchema.safeParse(req.body);
   if (!parsed.success) return validationError(res, parsed.error);
-  const { propertySlug, checkIn, checkOut, guests } = parsed.data;
+  const { apartmentSlug, checkIn, checkOut, guests } = parsed.data;
 
-  const context = resolveStay(propertySlug, checkIn, checkOut, guests);
-  if (!context) return res.status(404).json({ error: 'not_found', message: 'Объект не найден' });
+  const context = resolveStay(apartmentSlug, checkIn, checkOut, guests);
+  if (!context) return res.status(404).json({ error: 'not_found', message: 'Апартаменты не найдены' });
   if (context.error) return res.status(context.error.status).json(context.error.body);
 
-  const { property } = context;
-  const available = isRangeAvailable(property.id, checkIn, checkOut);
+  const { apartment } = context;
 
   res.json({
-    available,
+    available: isRangeAvailable(apartment.id, checkIn, checkOut),
     quote: buildQuote({
-      propertyId: property.id,
-      basePrice: property.basePrice,
-      cleaningFee: property.cleaningFee,
+      apartmentId: apartment.id,
+      basePrice: apartment.basePrice,
+      cleaningFee: apartment.cleaningFee,
       checkIn,
       checkOut,
       guests,
@@ -120,15 +121,15 @@ bookingsRouter.post('/bookings', (req, res) => {
   if (!parsed.success) return validationError(res, parsed.error);
   const { stay, guest } = parsed.data;
 
-  const context = resolveStay(stay.propertySlug, stay.checkIn, stay.checkOut, stay.guests);
-  if (!context) return res.status(404).json({ error: 'not_found', message: 'Объект не найден' });
+  const context = resolveStay(stay.apartmentSlug, stay.checkIn, stay.checkOut, stay.guests);
+  if (!context) return res.status(404).json({ error: 'not_found', message: 'Апартаменты не найдены' });
   if (context.error) return res.status(context.error.status).json(context.error.body);
 
-  const { property } = context;
+  const { apartment } = context;
   const quote = buildQuote({
-    propertyId: property.id,
-    basePrice: property.basePrice,
-    cleaningFee: property.cleaningFee,
+    apartmentId: apartment.id,
+    basePrice: apartment.basePrice,
+    cleaningFee: apartment.cleaningFee,
     checkIn: stay.checkIn,
     checkOut: stay.checkOut,
     guests: stay.guests,
@@ -139,18 +140,18 @@ bookingsRouter.post('/bookings', (req, res) => {
   const holdExpiresAt = new Date(now.getTime() + HOLD_MINUTES * 60_000).toISOString();
 
   const create = db.transaction(() => {
-    if (!isRangeAvailable(property.id, stay.checkIn, stay.checkOut)) {
+    if (!isRangeAvailable(apartment.id, stay.checkIn, stay.checkOut)) {
       return false;
     }
     db.prepare(
       `INSERT INTO bookings (
-         id, property_id, check_in, check_out, guests, status,
+         id, apartment_id, check_in, check_out, guests, status,
          guest_name, guest_phone, guest_email, guest_comment,
          total, prepayment, quote_json, created_at, hold_expires_at
        ) VALUES (?, ?, ?, ?, ?, 'awaiting_payment', ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     ).run(
       id,
-      property.id,
+      apartment.id,
       stay.checkIn,
       stay.checkOut,
       stay.guests,
@@ -167,8 +168,7 @@ bookingsRouter.post('/bookings', (req, res) => {
     return true;
   });
 
-  const created = create.immediate();
-  if (!created) {
+  if (!create.immediate()) {
     return res.status(409).json({
       error: 'dates_taken',
       message: 'Эти даты только что забронировали. Выберите другие — календарь уже обновлён.',
@@ -191,7 +191,7 @@ bookingsRouter.post('/bookings/:id/cancel', (req, res) => {
   if (booking.status === 'paid') {
     return res.status(409).json({
       error: 'already_paid',
-      message: 'Оплаченную бронь отменяет менеджер — напишите нам, вернём предоплату по условиям.',
+      message: 'Оплаченную бронь отменяет хозяин — позвоните нам, вернём предоплату по условиям.',
     });
   }
 
